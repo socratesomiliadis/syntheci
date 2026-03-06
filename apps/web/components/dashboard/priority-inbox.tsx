@@ -2,8 +2,21 @@
 
 import { useState } from "react";
 
+import { Loader2 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+
 import type { TriageLabel } from "@syntheci/shared";
 
+import {
+  listItemReveal,
+  panelReveal,
+  panelTransition,
+  overlayReveal,
+  overlayTransition,
+  statusReveal,
+  statusTransition,
+  withStagger
+} from "@/components/dashboard/motion-presets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,91 +108,149 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
   }
 
   return (
-    <Card id="inbox" className="border-slate-200 shadow-sm">
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-lg">Priority Inbox</CardTitle>
-          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
-            Triage + actioning
-          </Badge>
-        </div>
-        <CardDescription>Ranked message queue with one-click reply and scheduling actions.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {status ? (
-          <p
-            className={
-              statusTone === "error"
-                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-            }
-          >
-            {status}
-          </p>
-        ) : null}
-
-        {items.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500">
-            No messages yet.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {items.map((item) => (
-              <article key={item.id} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-slate-800">{item.subject ?? "(no subject)"}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {item.senderName ?? item.senderEmail ?? "Unknown sender"} •{" "}
-                      {new Date(item.receivedAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge
-                      variant={item.label === "urgent" ? "destructive" : "outline"}
-                      className="capitalize"
-                    >
-                      {(item.label ?? "untriaged").replace("_", " ")}
-                    </Badge>
-                    <span className="text-xs text-slate-500">
-                      score {item.score.toFixed(1)}
-                      {typeof item.confidence === "number"
-                        ? ` • ${(item.confidence * 100).toFixed(0)}% confidence`
-                        : ""}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => triageMessage(item.id)}
-                    disabled={busyId === item.id}
-                  >
-                    Re-triage
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => generateDraft(item.id)}
-                    disabled={busyId === item.id}
-                  >
-                    Draft reply
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => proposeMeeting(item.id)}
-                    disabled={busyId === item.id}
-                  >
-                    Extract meeting
-                  </Button>
-                </div>
-              </article>
-            ))}
+    <motion.section
+      id="inbox"
+      initial="initial"
+      animate="animate"
+      variants={panelReveal}
+      transition={panelTransition}
+    >
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-lg">Priority Inbox</CardTitle>
+            <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+              Triage + actioning
+            </Badge>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <CardDescription>Ranked message queue with one-click reply and scheduling actions.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {status ? (
+              <motion.p
+                key={`inbox-status-${statusTone}-${status}`}
+                layout
+                className={
+                  statusTone === "error"
+                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                }
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={statusReveal}
+                transition={statusTransition}
+              >
+                {status}
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {items.length === 0 ? (
+              <motion.p
+                key="inbox-empty"
+                layout
+                className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={statusReveal}
+                transition={statusTransition}
+              >
+                No messages yet.
+              </motion.p>
+            ) : (
+              <motion.div key="inbox-list" layout className="space-y-3">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {items.map((item, index) => (
+                    <motion.article
+                      key={item.id}
+                      layout
+                      className="relative space-y-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      variants={listItemReveal}
+                      transition={withStagger(index)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-slate-800">{item.subject ?? "(no subject)"}</p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {item.senderName ?? item.senderEmail ?? "Unknown sender"} •{" "}
+                            {new Date(item.receivedAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge
+                            variant={item.label === "urgent" ? "destructive" : "outline"}
+                            className="capitalize"
+                          >
+                            {(item.label ?? "untriaged").replace("_", " ")}
+                          </Badge>
+                          <span className="text-xs text-slate-500">
+                            score {item.score.toFixed(1)}
+                            {typeof item.confidence === "number"
+                              ? ` • ${(item.confidence * 100).toFixed(0)}% confidence`
+                              : ""}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => triageMessage(item.id)}
+                          disabled={busyId === item.id}
+                        >
+                          Re-triage
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => generateDraft(item.id)}
+                          disabled={busyId === item.id}
+                        >
+                          Draft reply
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => proposeMeeting(item.id)}
+                          disabled={busyId === item.id}
+                        >
+                          Extract meeting
+                        </Button>
+                      </div>
+
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        {busyId === item.id ? (
+                          <motion.div
+                            key={`${item.id}-busy`}
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[2px]"
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            variants={overlayReveal}
+                            transition={overlayTransition}
+                          >
+                            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
+                              <Loader2 className="size-3.5 animate-spin text-blue-600" />
+                              Running action...
+                            </span>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                    </motion.article>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+    </motion.section>
   );
 }

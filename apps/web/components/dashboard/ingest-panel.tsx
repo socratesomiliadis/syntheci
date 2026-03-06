@@ -2,8 +2,18 @@
 
 import { startTransition, useState } from "react";
 
-import { Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 
+import {
+  overlayReveal,
+  overlayTransition,
+  panelReveal,
+  panelTransition,
+  statusReveal,
+  statusTransition,
+  withStagger
+} from "@/components/dashboard/motion-presets";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -112,78 +122,134 @@ export function IngestPanel() {
   }
 
   return (
-    <Card id="ingest" className="border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-lg">Ingestion</CardTitle>
-        <CardDescription>Upload files, save notes, or ingest links for retrieval and automation.</CardDescription>
-      </CardHeader>
+    <motion.section
+      id="ingest"
+      initial="initial"
+      animate="animate"
+      variants={panelReveal}
+      transition={panelTransition}
+    >
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">Ingestion</CardTitle>
+          <CardDescription>
+            Upload files, save notes, or ingest links for retrieval and automation.
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-6">
-        <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
-          <Label htmlFor="upload-input">Upload document (PDF/TXT/MD)</Label>
-          <Input
-            id="upload-input"
-            type="file"
-            accept=".pdf,.txt,.md,text/plain,text/markdown,application/pdf"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void uploadFile(file);
-            }}
-            disabled={isBusy}
-          />
-          <p className="text-xs text-slate-500">Files are stored, extracted, and queued for embeddings.</p>
-        </div>
-
-        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
-          <Label htmlFor="note-title">Note title</Label>
-          <Input
-            id="note-title"
-            value={noteTitle}
-            onChange={(event) => setNoteTitle(event.target.value)}
-            placeholder="Daily standup notes"
-            disabled={isBusy}
-          />
-          <Label htmlFor="note-body">Note body</Label>
-          <Textarea
-            id="note-body"
-            value={noteBody}
-            onChange={(event) => setNoteBody(event.target.value)}
-            rows={5}
-            placeholder="Capture ideas, follow-ups, or key decisions..."
-            disabled={isBusy}
-          />
-          <Button type="button" onClick={createNote} disabled={isBusy}>
-            Save note
-          </Button>
-        </div>
-
-        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
-          <Label htmlFor="link-url">Import link</Label>
-          <Input
-            id="link-url"
-            value={linkUrl}
-            onChange={(event) => setLinkUrl(event.target.value)}
-            placeholder="https://example.com/article"
-            disabled={isBusy}
-          />
-          <Button type="button" variant="outline" onClick={importLink} disabled={isBusy}>
-            <Upload className="mr-2 size-4" />
-            Queue link import
-          </Button>
-        </div>
-
-        {status ? (
-          <p
-            className={
-              statusTone === "error"
-                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-            }
+        <CardContent className="relative space-y-6">
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={statusReveal}
+            transition={withStagger(0, 0.05)}
+            className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
           >
-            {status}
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+            <Label htmlFor="upload-input">Upload document (PDF/TXT/MD)</Label>
+            <Input
+              id="upload-input"
+              type="file"
+              accept=".pdf,.txt,.md,text/plain,text/markdown,application/pdf"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void uploadFile(file);
+              }}
+              disabled={isBusy}
+            />
+            <p className="text-xs text-slate-500">Files are stored, extracted, and queued for embeddings.</p>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={statusReveal}
+            transition={withStagger(1, 0.05)}
+            className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
+          >
+            <Label htmlFor="note-title">Note title</Label>
+            <Input
+              id="note-title"
+              value={noteTitle}
+              onChange={(event) => setNoteTitle(event.target.value)}
+              placeholder="Daily standup notes"
+              disabled={isBusy}
+            />
+            <Label htmlFor="note-body">Note body</Label>
+            <Textarea
+              id="note-body"
+              value={noteBody}
+              onChange={(event) => setNoteBody(event.target.value)}
+              rows={5}
+              placeholder="Capture ideas, follow-ups, or key decisions..."
+              disabled={isBusy}
+            />
+            <Button type="button" onClick={createNote} disabled={isBusy}>
+              Save note
+            </Button>
+          </motion.div>
+
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={statusReveal}
+            transition={withStagger(2, 0.05)}
+            className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
+          >
+            <Label htmlFor="link-url">Import link</Label>
+            <Input
+              id="link-url"
+              value={linkUrl}
+              onChange={(event) => setLinkUrl(event.target.value)}
+              placeholder="https://example.com/article"
+              disabled={isBusy}
+            />
+            <Button type="button" variant="outline" onClick={importLink} disabled={isBusy}>
+              <Upload className="mr-2 size-4" />
+              Queue link import
+            </Button>
+          </motion.div>
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {status ? (
+              <motion.p
+                key={`ingest-status-${statusTone}-${status}`}
+                layout
+                className={
+                  statusTone === "error"
+                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                }
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={statusReveal}
+                transition={statusTransition}
+              >
+                {status}
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {isBusy ? (
+              <motion.div
+                key="ingest-busy-overlay"
+                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-[2px]"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={overlayReveal}
+                transition={overlayTransition}
+              >
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+                  <Loader2 className="size-3.5 animate-spin text-blue-600" />
+                  Processing ingestion...
+                </span>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </CardContent>
+      </Card>
+    </motion.section>
   );
 }
