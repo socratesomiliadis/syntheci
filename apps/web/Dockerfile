@@ -14,6 +14,9 @@ RUN pnpm install --frozen-lockfile=false
 
 COPY . .
 
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 RUN pnpm --filter @syntheci/web build
 
 EXPOSE 3000

@@ -25,6 +25,8 @@ Syntheci is a hackathon MVP for an AI knowledge base / second brain system:
    - `pnpm install`
 3. Start infra + services:
    - `docker compose up --build`
+4. If you change any `NEXT_PUBLIC_*` variable (for example `NEXT_PUBLIC_APP_URL`), rebuild the web image:
+   - `docker compose build web && docker compose up -d web`
 
 ## Local Commands
 
