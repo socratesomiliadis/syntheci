@@ -1,5 +1,6 @@
 node_modules
 .next
+out
 dist
 build
 coverage
@@ -10,6 +11,9 @@ coverage
 .turbo
 tmp
 *.log
+.pnpm-debug.log*
+*.tsbuildinfo
+next-env.d.ts
 
 # Docker volumes
 data/postgres
