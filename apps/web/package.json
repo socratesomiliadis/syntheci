@@ -1,0 +1,40 @@
+{
+  "name": "@syntheci/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.744.0",
+    "@aws-sdk/s3-request-presigner": "^3.744.0",
+    "@google-cloud/pubsub": "^4.10.0",
+    "@syntheci/ai": "workspace:*",
+    "@syntheci/db": "workspace:*",
+    "@syntheci/shared": "workspace:*",
+    "better-auth": "1.2.5",
+    "bullmq": "^5.41.5",
+    "drizzle-orm": "^0.44.7",
+    "googleapis": "^144.0.0",
+    "ioredis": "5.9.3",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.19.0",
+    "eslint-config-next": "^16.0.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  }
+}

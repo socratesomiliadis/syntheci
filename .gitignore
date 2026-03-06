@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+build
+coverage
+.DS_Store
+.env
+.env.local
+.pnpm-store
+.turbo
+tmp
+*.log
+
+# Docker volumes
+data/postgres
+data/redis
+data/minio

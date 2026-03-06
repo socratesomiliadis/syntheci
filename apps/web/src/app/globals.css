@@ -1,0 +1,92 @@
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --panel-2: #1f2937;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #22c55e;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(1200px 800px at 0% -10%, #19325f 0%, transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, #2f4c3f 0%, transparent 55%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  width: min(1200px, 94vw);
+  margin: 2rem auto;
+}
+
+.panel {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--panel), #ffffff 2%), var(--panel-2));
+  border: 1px solid color-mix(in oklab, var(--muted), transparent 70%);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid-2 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.btn {
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 55%);
+  background: color-mix(in oklab, var(--accent), transparent 82%);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+}
+
+.btn.secondary {
+  border-color: color-mix(in oklab, var(--muted), transparent 55%);
+  background: color-mix(in oklab, var(--panel), #ffffff 3%);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.76rem;
+  background: color-mix(in oklab, var(--accent), transparent 80%);
+  border: 1px solid color-mix(in oklab, var(--accent), transparent 50%);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+@media (max-width: 940px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
