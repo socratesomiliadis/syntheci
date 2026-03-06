@@ -4,6 +4,10 @@ import { useState } from "react";
 
 import type { TriageLabel } from "@syntheci/shared";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface InboxItem {
   id: string;
   subject: string | null;
@@ -84,63 +88,77 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
   }
 
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Priority Inbox</h2>
-        <span className="badge">triage + actioning</span>
-      </div>
-      {status ? <p className="muted">{status}</p> : null}
-      <div className="grid">
+    <Card id="inbox" className="border-slate-200 shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-lg">Priority Inbox</CardTitle>
+          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            Triage + actioning
+          </Badge>
+        </div>
+        <CardDescription>Ranked message queue with one-click reply and scheduling actions.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {status ? (
+          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+            {status}
+          </p>
+        ) : null}
+
         {items.length === 0 ? (
-          <p className="muted">No messages yet.</p>
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500">
+            No messages yet.
+          </p>
         ) : (
-          items.map((item) => (
-            <article key={item.id} className="panel" style={{ background: "#0b1220" }}>
-              <div className="row">
-                <div>
-                  <strong>{item.subject ?? "(no subject)"}</strong>
-                  <p className="muted" style={{ margin: "0.2rem 0 0" }}>
-                    {item.senderName ?? item.senderEmail ?? "Unknown sender"} •{" "}
-                    {new Date(item.receivedAt).toLocaleString()}
-                  </p>
+          <div className="space-y-3">
+            {items.map((item) => (
+              <article key={item.id} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-slate-800">{item.subject ?? "(no subject)"}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {item.senderName ?? item.senderEmail ?? "Unknown sender"} •{" "}
+                      {new Date(item.receivedAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant="outline" className="capitalize">
+                      {item.label ?? "untriaged"}
+                    </Badge>
+                    <span className="text-xs text-slate-500">score {item.score.toFixed(1)}</span>
+                  </div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div className="badge">{item.label ?? "untriaged"}</div>
-                  <p className="muted" style={{ margin: "0.25rem 0 0" }}>
-                    score {item.score.toFixed(1)}
-                  </p>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => triageMessage(item.id)}
+                    disabled={busyId === item.id}
+                  >
+                    Re-triage
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => generateDraft(item.id)}
+                    disabled={busyId === item.id}
+                  >
+                    Draft reply
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => proposeMeeting(item.id)}
+                    disabled={busyId === item.id}
+                  >
+                    Extract meeting
+                  </Button>
                 </div>
-              </div>
-              <div className="row" style={{ justifyContent: "flex-start", marginTop: "0.8rem" }}>
-                <button
-                  type="button"
-                  className="btn secondary"
-                  onClick={() => triageMessage(item.id)}
-                  disabled={busyId === item.id}
-                >
-                  Re-triage
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => generateDraft(item.id)}
-                  disabled={busyId === item.id}
-                >
-                  Draft reply
-                </button>
-                <button
-                  type="button"
-                  className="btn secondary"
-                  onClick={() => proposeMeeting(item.id)}
-                  disabled={busyId === item.id}
-                >
-                  Extract meeting
-                </button>
-              </div>
-            </article>
-          ))
+              </article>
+            ))}
+          </div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,150 +1,229 @@
 "use client";
 
-import { startTransition, useDeferredValue, useState } from "react";
+import { useMemo, useState } from "react";
 
-import type { SourceType } from "@syntheci/shared";
+import { useChat } from "@ai-sdk/react";
+import { isReasoningUIPart, isTextUIPart, type ChatStatus, type UIMessage } from "ai";
+import { Sparkles } from "lucide-react";
+
+import type { ChatCitation, SourceType } from "@syntheci/shared";
+
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton
+} from "@/components/ai-elements/conversation";
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea
+} from "@/components/ai-elements/prompt-input";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
+import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const sourceOptions: SourceType[] = ["gmail", "slack", "note", "upload", "link"];
 
-interface ChatCitation {
-  sourceType: SourceType;
-  sourceId: string;
-  messageOrDocId: string;
-  snippet: string;
-  deepLink: string | null;
+interface ChatMetadata {
+  sourceTypes?: SourceType[];
+  citations?: ChatCitation[];
+}
+
+type ChatMessage = UIMessage<ChatMetadata>;
+
+function messageText(message: ChatMessage) {
+  return message.parts
+    .filter(isTextUIPart)
+    .map((part) => part.text)
+    .join("")
+    .trim();
+}
+
+function messageReasoning(message: ChatMessage) {
+  return message.parts
+    .filter(isReasoningUIPart)
+    .map((part) => part.text)
+    .join("")
+    .trim();
 }
 
 export function ChatPanel() {
-  const [question, setQuestion] = useState("");
-  const deferredQuestion = useDeferredValue(question);
   const [selectedSources, setSelectedSources] = useState<SourceType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [answer, setAnswer] = useState<string>("");
-  const [citations, setCitations] = useState<ChatCitation[]>([]);
-  const [error, setError] = useState<string | null>(null);
+
+  const { messages, sendMessage, setMessages, status, stop, error, regenerate } = useChat<ChatMessage>();
+
+  const canSubmit = status !== "submitted" && status !== "streaming";
+
+  const streamingMessageId = useMemo(() => {
+    if (status !== "streaming") return null;
+    return [...messages].reverse().find((message) => message.role === "assistant")?.id ?? null;
+  }, [messages, status]);
 
   function toggleSource(source: SourceType) {
     setSelectedSources((prev) =>
-      prev.includes(source) ? prev.filter((it) => it !== source) : [...prev, source]
+      prev.includes(source) ? prev.filter((item) => item !== source) : [...prev, source]
     );
   }
 
-  function clear() {
-    setAnswer("");
-    setCitations([]);
-    setError(null);
-  }
-
-  async function submit() {
-    if (!deferredQuestion.trim()) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json"
-        },
-        body: JSON.stringify({
-          question: deferredQuestion,
-          sourceTypes: selectedSources
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Chat request failed (${response.status})`);
-      }
-
-      const payload = (await response.json()) as {
-        answer: string;
-        citations: ChatCitation[];
-      };
-
-      startTransition(() => {
-        setAnswer(payload.answer);
-        setCitations(payload.citations ?? []);
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown chat error");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Knowledge Chat</h2>
-        <span className="badge">RAG + citations</span>
-      </div>
-
-      <textarea
-        value={question}
-        onChange={(event) => setQuestion(event.target.value)}
-        rows={4}
-        placeholder="Ask about emails, Slack, notes, uploads, and links..."
-        style={{
-          width: "100%",
-          resize: "vertical",
-          padding: "0.8rem",
-          borderRadius: 12,
-          border: "1px solid #334155",
-          background: "#0b1220",
-          color: "inherit"
-        }}
-      />
-
-      <div className="row" style={{ justifyContent: "flex-start", flexWrap: "wrap" }}>
-        {sourceOptions.map((source) => (
-          <button
-            key={source}
-            type="button"
-            className="btn secondary"
-            onClick={() => toggleSource(source)}
-            style={{
-              borderColor: selectedSources.includes(source) ? "#22c55e" : undefined
-            }}
-          >
-            {source}
-          </button>
-        ))}
-      </div>
-
-      <div className="row" style={{ justifyContent: "flex-start" }}>
-        <button type="button" className="btn" onClick={submit} disabled={isLoading}>
-          {isLoading ? "Thinking..." : "Ask"}
-        </button>
-        <button type="button" className="btn secondary" onClick={clear}>
-          Clear
-        </button>
-      </div>
-
-      {error ? <p style={{ color: "var(--danger)" }}>{error}</p> : null}
-
-      {answer ? (
-        <div className="panel" style={{ background: "#0b1220" }}>
-          <p style={{ whiteSpace: "pre-wrap", marginTop: 0 }}>{answer}</p>
-          <h3>Citations</h3>
-          <ul style={{ margin: 0, paddingLeft: "1rem" }}>
-            {citations.map((citation, idx) => (
-              <li key={`${citation.messageOrDocId}-${idx}`} style={{ marginBottom: "0.6rem" }}>
-                <strong>{citation.sourceType}</strong>: {citation.snippet}
-                {citation.deepLink ? (
-                  <>
-                    {" "}
-                    <a href={citation.deepLink} target="_blank" rel="noreferrer">
-                      Open source
-                    </a>
-                  </>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+    <Card id="chat" className="border-slate-200 shadow-sm">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle className="text-lg">Knowledge Chat</CardTitle>
+            <CardDescription>
+              Ask grounded questions across inbox, Slack, notes, uploads, and links.
+            </CardDescription>
+          </div>
+          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            <Sparkles className="mr-1 size-3.5" />
+            Streaming RAG
+          </Badge>
         </div>
-      ) : null}
-    </section>
+
+        <div className="flex flex-wrap gap-2">
+          {sourceOptions.map((source) => (
+            <Button
+              key={source}
+              type="button"
+              variant={selectedSources.includes(source) ? "default" : "outline"}
+              size="sm"
+              className="capitalize"
+              onClick={() => toggleSource(source)}
+            >
+              {source}
+            </Button>
+          ))}
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="relative h-[30rem] overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <Conversation>
+            <ConversationContent>
+              {messages.length === 0 ? (
+                <ConversationEmptyState
+                  title="No messages yet"
+                  description="Start with a question about priority threads, meetings, or docs."
+                />
+              ) : (
+                messages.map((message) => {
+                  const text = messageText(message);
+                  const reasoning = messageReasoning(message);
+                  const citations = message.metadata?.citations ?? [];
+                  const isUser = message.role === "user";
+
+                  return (
+                    <article
+                      key={message.id}
+                      className={cn("mx-auto w-full max-w-3xl space-y-2", isUser && "items-end")}
+                    >
+                      <div
+                        className={cn(
+                          "w-fit max-w-[90%] rounded-xl border px-4 py-3 text-sm shadow-sm",
+                          isUser
+                            ? "ml-auto border-blue-200 bg-blue-600 text-white"
+                            : "border-slate-200 bg-white text-slate-800"
+                        )}
+                      >
+                        <p className="whitespace-pre-wrap">{text || "..."}</p>
+                      </div>
+
+                      {!isUser && reasoning ? (
+                        <Reasoning isStreaming={streamingMessageId === message.id}>
+                          <ReasoningTrigger />
+                          <ReasoningContent>{reasoning}</ReasoningContent>
+                        </Reasoning>
+                      ) : null}
+
+                      {!isUser && citations.length > 0 ? (
+                        <Sources>
+                          <SourcesTrigger count={citations.length} />
+                          <SourcesContent>
+                            {citations.map((citation, idx) => (
+                              <Source
+                                key={`${citation.messageOrDocId}-${idx}`}
+                                href={citation.deepLink ?? "#"}
+                                title={`${citation.sourceType}: ${citation.snippet.slice(0, 80)}...`}
+                              >
+                                <span className="truncate text-left text-xs">
+                                  {citation.sourceType}: {citation.snippet.slice(0, 120)}
+                                  {citation.deepLink ? "" : " (no deep link)"}
+                                </span>
+                              </Source>
+                            ))}
+                          </SourcesContent>
+                        </Sources>
+                      ) : null}
+                    </article>
+                  );
+                })
+              )}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+        </div>
+
+        <PromptInput
+          className="rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
+          onSubmit={async (message) => {
+            if (!message.text.trim() || !canSubmit) return;
+
+            await sendMessage(
+              {
+                text: message.text,
+                metadata: {
+                  sourceTypes: selectedSources
+                }
+              },
+              {
+                body: {
+                  sourceTypes: selectedSources
+                }
+              }
+            );
+          }}
+        >
+          <PromptInputBody>
+            <PromptInputTextarea placeholder="Ask about an email, decision, file, or Slack thread..." />
+          </PromptInputBody>
+          <PromptInputFooter>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setMessages([])}
+                disabled={messages.length === 0 || status === "streaming"}
+              >
+                Clear
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void regenerate()}
+                disabled={messages.length === 0 || status === "streaming"}
+              >
+                Regenerate
+              </Button>
+            </div>
+            <PromptInputSubmit status={status as ChatStatus} onStop={stop} />
+          </PromptInputFooter>
+        </PromptInput>
+
+        {error ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error.message}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

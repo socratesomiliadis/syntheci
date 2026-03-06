@@ -2,6 +2,14 @@
 
 import { startTransition, useState } from "react";
 
+import { Upload } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 export function IngestPanel() {
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
@@ -97,69 +105,72 @@ export function IngestPanel() {
   }
 
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Ingestion</h2>
-        <span className="badge">notes + links + uploads</span>
-      </div>
+    <Card id="ingest" className="border-slate-200 shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg">Ingestion</CardTitle>
+        <CardDescription>Upload files, save notes, or ingest links for retrieval and automation.</CardDescription>
+      </CardHeader>
 
-      <div className="grid">
-        <label htmlFor="upload-input">Upload (PDF/TXT/MD)</label>
-        <input
-          id="upload-input"
-          type="file"
-          accept=".pdf,.txt,.md,text/plain,text/markdown,application/pdf"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) {
-              void uploadFile(file);
-            }
-          }}
-          disabled={isBusy}
-        />
-      </div>
+      <CardContent className="space-y-6">
+        <div className="space-y-2 rounded-lg border border-slate-200 p-4">
+          <Label htmlFor="upload-input">Upload document (PDF/TXT/MD)</Label>
+          <Input
+            id="upload-input"
+            type="file"
+            accept=".pdf,.txt,.md,text/plain,text/markdown,application/pdf"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void uploadFile(file);
+            }}
+            disabled={isBusy}
+          />
+          <p className="text-xs text-slate-500">Files are stored, extracted, and queued for embeddings.</p>
+        </div>
 
-      <div className="grid">
-        <label htmlFor="note-title">Note title</label>
-        <input
-          id="note-title"
-          value={noteTitle}
-          onChange={(event) => setNoteTitle(event.target.value)}
-          placeholder="Daily standup notes"
-          style={{ padding: "0.6rem", borderRadius: 10, border: "1px solid #334155" }}
-          disabled={isBusy}
-        />
-        <label htmlFor="note-body">Note body</label>
-        <textarea
-          id="note-body"
-          value={noteBody}
-          onChange={(event) => setNoteBody(event.target.value)}
-          rows={4}
-          placeholder="Capture ideas, follow-ups, or key decisions..."
-          style={{ padding: "0.6rem", borderRadius: 10, border: "1px solid #334155" }}
-          disabled={isBusy}
-        />
-        <button type="button" className="btn" onClick={createNote} disabled={isBusy}>
-          Save note
-        </button>
-      </div>
+        <div className="grid gap-3 rounded-lg border border-slate-200 p-4">
+          <Label htmlFor="note-title">Note title</Label>
+          <Input
+            id="note-title"
+            value={noteTitle}
+            onChange={(event) => setNoteTitle(event.target.value)}
+            placeholder="Daily standup notes"
+            disabled={isBusy}
+          />
+          <Label htmlFor="note-body">Note body</Label>
+          <Textarea
+            id="note-body"
+            value={noteBody}
+            onChange={(event) => setNoteBody(event.target.value)}
+            rows={5}
+            placeholder="Capture ideas, follow-ups, or key decisions..."
+            disabled={isBusy}
+          />
+          <Button type="button" onClick={createNote} disabled={isBusy}>
+            Save note
+          </Button>
+        </div>
 
-      <div className="grid">
-        <label htmlFor="link-url">Import link</label>
-        <input
-          id="link-url"
-          value={linkUrl}
-          onChange={(event) => setLinkUrl(event.target.value)}
-          placeholder="https://example.com/article"
-          style={{ padding: "0.6rem", borderRadius: 10, border: "1px solid #334155" }}
-          disabled={isBusy}
-        />
-        <button type="button" className="btn secondary" onClick={importLink} disabled={isBusy}>
-          Queue link import
-        </button>
-      </div>
+        <div className="grid gap-3 rounded-lg border border-slate-200 p-4">
+          <Label htmlFor="link-url">Import link</Label>
+          <Input
+            id="link-url"
+            value={linkUrl}
+            onChange={(event) => setLinkUrl(event.target.value)}
+            placeholder="https://example.com/article"
+            disabled={isBusy}
+          />
+          <Button type="button" variant="outline" onClick={importLink} disabled={isBusy}>
+            <Upload className="mr-2 size-4" />
+            Queue link import
+          </Button>
+        </div>
 
-      {status ? <p className="muted">{status}</p> : null}
-    </section>
+        {status ? (
+          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+            {status}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

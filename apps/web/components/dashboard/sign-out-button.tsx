@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
 export function SignOutButton() {
@@ -23,8 +24,8 @@ export function SignOutButton() {
   }
 
   return (
-    <button type="button" className="btn secondary" onClick={onSignOut} disabled={isLoading}>
+    <Button type="button" variant="outline" onClick={onSignOut} disabled={isLoading}>
       {isLoading ? "Signing out..." : "Sign out"}
-    </button>
+    </Button>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
 export function GoogleSignInButton() {
@@ -20,8 +21,8 @@ export function GoogleSignInButton() {
   }
 
   return (
-    <button type="button" className="btn" onClick={handleSignIn} disabled={isLoading}>
+    <Button type="button" onClick={handleSignIn} disabled={isLoading} size="lg" className="w-full">
       {isLoading ? "Signing in..." : "Continue with Google"}
-    </button>
+    </Button>
   );
 }

@@ -1,3 +1,10 @@
+import { Link2, Slack } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
 interface ConnectorStatus {
   id: string;
   provider: string;
@@ -7,40 +14,59 @@ interface ConnectorStatus {
 
 export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] }) {
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Connectors</h2>
-        <span className="badge">Gmail + Slack</span>
-      </div>
-
-      <div className="row" style={{ justifyContent: "flex-start" }}>
-        <a href="/api/connect/google/start" className="btn">
-          Connect Gmail/Calendar
-        </a>
-        <a href="/api/connect/slack/start" className="btn secondary">
-          Connect Slack
-        </a>
-      </div>
-
-      {connectors.length === 0 ? (
-        <p className="muted">No connectors yet.</p>
-      ) : (
-        <div className="grid">
-          {connectors.map((connector) => (
-            <div key={connector.id} className="panel" style={{ background: "#0b1220" }}>
-              <div className="row">
-                <strong>{connector.provider}</strong>
-                <span className="muted">
-                  Updated {new Date(connector.updatedAt).toLocaleString()}
-                </span>
-              </div>
-              <p className="muted" style={{ marginBottom: 0 }}>
-                Scopes: {connector.scopes.join(", ") || "(none)"}
-              </p>
-            </div>
-          ))}
+    <Card className="h-full border-slate-200 shadow-sm">
+      <CardHeader className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-lg">Connectors</CardTitle>
+          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            Gmail + Slack
+          </Badge>
         </div>
-      )}
-    </section>
+        <CardDescription>Connect channels to keep the workspace synced continuously.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/api/connect/google/start"
+            className={cn(buttonVariants({ variant: "default" }), "inline-flex")}
+          >
+            <Link2 className="mr-2 size-4" />
+            Connect Gmail/Calendar
+          </a>
+          <a
+            href="/api/connect/slack/start"
+            className={cn(buttonVariants({ variant: "outline" }), "inline-flex")}
+          >
+            <Slack className="mr-2 size-4" />
+            Connect Slack
+          </a>
+        </div>
+
+        {connectors.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500">
+            No connectors yet. Start by linking Gmail or Slack.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {connectors.map((connector) => (
+              <article
+                key={connector.id}
+                className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium text-slate-800">{connector.provider}</p>
+                  <span className="text-xs text-slate-500">
+                    Updated {new Date(connector.updatedAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-slate-600">
+                  Scopes: {connector.scopes.join(", ") || "(none)"}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

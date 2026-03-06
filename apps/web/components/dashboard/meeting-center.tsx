@@ -4,6 +4,10 @@ import { useState } from "react";
 
 import type { MeetingProposalStatus } from "@syntheci/shared";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface MeetingProposalItem {
   id: string;
   title: string;
@@ -42,52 +46,67 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
   }
 
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Meeting Center</h2>
-        <span className="badge">proposal before creation</span>
-      </div>
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-lg">Meeting Center</CardTitle>
+          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            Proposal workflow
+          </Badge>
+        </div>
+        <CardDescription>Approve extracted meeting intents before calendar creation.</CardDescription>
+      </CardHeader>
 
-      {status ? <p className="muted">{status}</p> : null}
+      <CardContent className="space-y-3">
+        {status ? (
+          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+            {status}
+          </p>
+        ) : null}
 
-      <div className="grid">
         {proposals.length === 0 ? (
-          <p className="muted">No meeting proposals yet.</p>
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500">
+            No meeting proposals yet.
+          </p>
         ) : (
           proposals.map((proposal) => (
-            <article key={proposal.id} className="panel" style={{ background: "#0b1220" }}>
-              <div className="row">
-                <strong>{proposal.title}</strong>
-                <span className="badge">{proposal.status}</span>
+            <article
+              key={proposal.id}
+              className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-slate-800">{proposal.title}</p>
+                <Badge variant="outline" className="capitalize">
+                  {proposal.status}
+                </Badge>
               </div>
-              <p className="muted" style={{ marginBottom: 0 }}>
+              <p className="text-xs text-slate-600">
                 {proposal.startsAt ?? "TBD"} - {proposal.endsAt ?? "TBD"} ({proposal.timezone})
               </p>
-              <p className="muted" style={{ marginTop: "0.3rem" }}>
+              <p className="text-xs text-slate-600">
                 Attendees: {proposal.attendees.join(", ") || "(none)"}
               </p>
-              <div className="row" style={{ justifyContent: "flex-start" }}>
-                <button
+              <div className="flex flex-wrap gap-2">
+                <Button
                   type="button"
-                  className="btn secondary"
+                  variant="outline"
                   onClick={() => updateProposal(proposal.id, "approve")}
                   disabled={busyProposalId === proposal.id || proposal.status !== "proposed"}
                 >
                   Approve
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="btn"
                   onClick={() => updateProposal(proposal.id, "create")}
                   disabled={busyProposalId === proposal.id || proposal.status !== "approved"}
                 >
                   Create event
-                </button>
+                </Button>
               </div>
             </article>
           ))
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

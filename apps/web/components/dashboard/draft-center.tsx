@@ -4,6 +4,10 @@ import { useState } from "react";
 
 import type { DraftReplyStatus } from "@syntheci/shared";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface DraftItem {
   id: string;
   messageId: string;
@@ -38,47 +42,66 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
   }
 
   return (
-    <section className="panel grid">
-      <div className="row">
-        <h2 style={{ margin: 0 }}>Draft Center</h2>
-        <span className="badge">approval required</span>
-      </div>
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-lg">Draft Center</CardTitle>
+          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            Approval required
+          </Badge>
+        </div>
+        <CardDescription>Review, approve, and send generated email replies.</CardDescription>
+      </CardHeader>
 
-      {status ? <p className="muted">{status}</p> : null}
+      <CardContent className="space-y-3">
+        {status ? (
+          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+            {status}
+          </p>
+        ) : null}
 
-      <div className="grid">
         {drafts.length === 0 ? (
-          <p className="muted">No drafts yet.</p>
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500">
+            No drafts yet.
+          </p>
         ) : (
           drafts.map((draft) => (
-            <article key={draft.id} className="panel" style={{ background: "#0b1220" }}>
-              <div className="row">
-                <strong>{draft.messageId}</strong>
-                <span className="badge">{draft.status}</span>
+            <article key={draft.id} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium text-slate-800">{draft.messageId}</p>
+                  <p className="text-xs text-slate-500">
+                    Created {new Date(draft.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <Badge variant="outline" className="capitalize">
+                  {draft.status}
+                </Badge>
               </div>
-              <p style={{ whiteSpace: "pre-wrap" }}>{draft.body}</p>
-              <div className="row" style={{ justifyContent: "flex-start" }}>
-                <button
+
+              <p className="whitespace-pre-wrap text-sm text-slate-700">{draft.body}</p>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
                   type="button"
-                  className="btn secondary"
+                  variant="outline"
                   onClick={() => updateDraft(draft.id, "approve")}
                   disabled={busyDraftId === draft.id || draft.status !== "generated"}
                 >
                   Approve
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="btn"
                   onClick={() => updateDraft(draft.id, "send")}
                   disabled={busyDraftId === draft.id || draft.status !== "approved"}
                 >
                   Send now
-                </button>
+                </Button>
               </div>
             </article>
           ))
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
