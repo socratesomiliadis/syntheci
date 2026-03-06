@@ -23,6 +23,7 @@ interface InboxItem {
 export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
   const [items, setItems] = useState(initialItems);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function triageMessage(messageId: string) {
@@ -45,8 +46,10 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
           item.id === messageId ? { ...item, label: payload.label, confidence: payload.confidence } : item
         )
       );
+      setStatusTone("success");
       setStatus("Triage refreshed.");
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Triage failed");
     } finally {
       setBusyId(null);
@@ -62,8 +65,10 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
         body: JSON.stringify({ messageId })
       });
       if (!response.ok) throw new Error("Draft generation failed");
+      setStatusTone("success");
       setStatus("Draft generated. Open draft center to approve/send.");
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Draft failed");
     } finally {
       setBusyId(null);
@@ -79,8 +84,10 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
         body: JSON.stringify({ messageId })
       });
       if (!response.ok) throw new Error("Meeting extraction failed");
+      setStatusTone("success");
       setStatus("Meeting proposal generated.");
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Meeting extraction failed");
     } finally {
       setBusyId(null);
@@ -100,7 +107,13 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {status ? (
-          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+          <p
+            className={
+              statusTone === "error"
+                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+            }
+          >
             {status}
           </p>
         ) : null}
@@ -122,10 +135,18 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <Badge variant="outline" className="capitalize">
-                      {item.label ?? "untriaged"}
+                    <Badge
+                      variant={item.label === "urgent" ? "destructive" : "outline"}
+                      className="capitalize"
+                    >
+                      {(item.label ?? "untriaged").replace("_", " ")}
                     </Badge>
-                    <span className="text-xs text-slate-500">score {item.score.toFixed(1)}</span>
+                    <span className="text-xs text-slate-500">
+                      score {item.score.toFixed(1)}
+                      {typeof item.confidence === "number"
+                        ? ` • ${(item.confidence * 100).toFixed(0)}% confidence`
+                        : ""}
+                    </span>
                   </div>
                 </div>
 

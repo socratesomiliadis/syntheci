@@ -132,7 +132,7 @@ export default async function DashboardPage() {
 
         <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
           <section id="overview" className="grid gap-4 md:grid-cols-3">
-            <Card className="border-slate-200 shadow-sm">
+            <Card className="border-slate-200 bg-gradient-to-br from-white to-blue-50/50 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600">Connected providers</CardTitle>
               </CardHeader>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
                 <p className="text-2xl font-semibold text-slate-900">{connectors.length}</p>
               </CardContent>
             </Card>
-            <Card className="border-slate-200 shadow-sm">
+            <Card className="border-slate-200 bg-gradient-to-br from-white to-sky-50/50 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600">Priority candidates</CardTitle>
               </CardHeader>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                 <p className="text-2xl font-semibold text-slate-900">{inbox.length}</p>
               </CardContent>
             </Card>
-            <Card className="border-slate-200 shadow-sm">
+            <Card className="border-slate-200 bg-gradient-to-br from-white to-indigo-50/50 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600">Briefing items</CardTitle>
               </CardHeader>

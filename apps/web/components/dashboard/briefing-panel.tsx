@@ -33,7 +33,7 @@ export function BriefingPanel({
           </p>
         ) : (
           <div className="space-y-4">
-            <div className="space-y-1">
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 For {briefing.briefingDate}
               </p>
@@ -53,6 +53,9 @@ export function BriefingPanel({
                     </Badge>
                   </div>
                   <p className="mt-1 text-xs text-slate-600">{item.reason}</p>
+                  <p className="mt-2 text-[11px] uppercase tracking-wide text-slate-500">
+                    {item.sourceRefs.length} source reference{item.sourceRefs.length === 1 ? "" : "s"}
+                  </p>
                 </div>
               ))}
             </div>

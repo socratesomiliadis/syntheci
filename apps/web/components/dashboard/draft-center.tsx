@@ -20,6 +20,7 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
   const [drafts, setDrafts] = useState(initialDrafts);
   const [busyDraftId, setBusyDraftId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
 
   async function updateDraft(draftId: string, action: "approve" | "send") {
     setBusyDraftId(draftId);
@@ -33,8 +34,10 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
       setDrafts((prev) =>
         prev.map((draft) => (draft.id === draftId ? { ...draft, status: payload.status } : draft))
       );
+      setStatusTone("success");
       setStatus(`Draft ${action}d successfully.`);
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : `${action} failed`);
     } finally {
       setBusyDraftId(null);
@@ -55,7 +58,13 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
 
       <CardContent className="space-y-3">
         {status ? (
-          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+          <p
+            className={
+              statusTone === "error"
+                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+            }
+          >
             {status}
           </p>
         ) : null}
@@ -79,7 +88,9 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                 </Badge>
               </div>
 
-              <p className="whitespace-pre-wrap text-sm text-slate-700">{draft.body}</p>
+              <p className="line-clamp-6 whitespace-pre-wrap rounded-md bg-white px-3 py-2 text-sm text-slate-700">
+                {draft.body}
+              </p>
 
               <div className="flex flex-wrap gap-2">
                 <Button

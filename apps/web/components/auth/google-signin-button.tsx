@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { Chrome } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
@@ -22,6 +24,7 @@ export function GoogleSignInButton() {
 
   return (
     <Button type="button" onClick={handleSignIn} disabled={isLoading} size="lg" className="w-full">
+      {!isLoading ? <Chrome className="size-4" /> : null}
       {isLoading ? "Signing in..." : "Continue with Google"}
     </Button>
   );

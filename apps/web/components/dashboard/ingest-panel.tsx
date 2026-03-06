@@ -15,6 +15,7 @@ export function IngestPanel() {
   const [noteBody, setNoteBody] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [isBusy, setIsBusy] = useState(false);
 
   async function createNote() {
@@ -32,8 +33,10 @@ export function IngestPanel() {
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setNoteTitle("");
       setNoteBody("");
+      setStatusTone("success");
       startTransition(() => setStatus("Note saved and queued for embedding."));
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Note failed");
     } finally {
       setIsBusy(false);
@@ -51,8 +54,10 @@ export function IngestPanel() {
       });
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setLinkUrl("");
+      setStatusTone("success");
       startTransition(() => setStatus("Link queued for extraction and embeddings."));
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Link import failed");
     } finally {
       setIsBusy(false);
@@ -96,8 +101,10 @@ export function IngestPanel() {
       });
       if (!completeResponse.ok) throw new Error("Upload completion failed");
 
+      setStatusTone("success");
       startTransition(() => setStatus("Upload indexed and queued for processing."));
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setIsBusy(false);
@@ -112,7 +119,7 @@ export function IngestPanel() {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="space-y-2 rounded-lg border border-slate-200 p-4">
+        <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
           <Label htmlFor="upload-input">Upload document (PDF/TXT/MD)</Label>
           <Input
             id="upload-input"
@@ -127,7 +134,7 @@ export function IngestPanel() {
           <p className="text-xs text-slate-500">Files are stored, extracted, and queued for embeddings.</p>
         </div>
 
-        <div className="grid gap-3 rounded-lg border border-slate-200 p-4">
+        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
           <Label htmlFor="note-title">Note title</Label>
           <Input
             id="note-title"
@@ -150,7 +157,7 @@ export function IngestPanel() {
           </Button>
         </div>
 
-        <div className="grid gap-3 rounded-lg border border-slate-200 p-4">
+        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
           <Label htmlFor="link-url">Import link</Label>
           <Input
             id="link-url"
@@ -166,7 +173,13 @@ export function IngestPanel() {
         </div>
 
         {status ? (
-          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+          <p
+            className={
+              statusTone === "error"
+                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+            }
+          >
             {status}
           </p>
         ) : null}

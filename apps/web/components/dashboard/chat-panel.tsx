@@ -81,10 +81,15 @@ export function ChatPanel() {
               Ask grounded questions across inbox, Slack, notes, uploads, and links.
             </CardDescription>
           </div>
-          <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
-            <Sparkles className="mr-1 size-3.5" />
-            Streaming RAG
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+              <Sparkles className="mr-1 size-3.5" />
+              Streaming RAG
+            </Badge>
+            <Badge variant="outline" className="border-slate-300 text-slate-600">
+              {selectedSources.length === 0 ? "All sources" : `${selectedSources.length} source filters`}
+            </Badge>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">

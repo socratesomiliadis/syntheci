@@ -25,6 +25,17 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
         <CardDescription>Connect channels to keep the workspace synced continuously.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Connected</p>
+            <p className="text-xl font-semibold text-slate-800">{connectors.length}</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Providers</p>
+            <p className="text-xl font-semibold text-slate-800">Gmail, Slack</p>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <a
             href="/api/connect/google/start"

@@ -22,6 +22,7 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
   const [proposals, setProposals] = useState(initialProposals);
   const [busyProposalId, setBusyProposalId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
 
   async function updateProposal(proposalId: string, action: "approve" | "create") {
     setBusyProposalId(proposalId);
@@ -37,8 +38,10 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
           proposal.id === proposalId ? { ...proposal, status: payload.status } : proposal
         )
       );
+      setStatusTone("success");
       setStatus(`Proposal ${action}d successfully.`);
     } catch (error) {
+      setStatusTone("error");
       setStatus(error instanceof Error ? error.message : `${action} failed`);
     } finally {
       setBusyProposalId(null);
@@ -59,7 +62,13 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
 
       <CardContent className="space-y-3">
         {status ? (
-          <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+          <p
+            className={
+              statusTone === "error"
+                ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+            }
+          >
             {status}
           </p>
         ) : null}
@@ -80,10 +89,10 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
                   {proposal.status}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
                 {proposal.startsAt ?? "TBD"} - {proposal.endsAt ?? "TBD"} ({proposal.timezone})
               </p>
-              <p className="text-xs text-slate-600">
+              <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
                 Attendees: {proposal.attendees.join(", ") || "(none)"}
               </p>
               <div className="flex flex-wrap gap-2">
