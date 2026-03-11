@@ -45,6 +45,12 @@ export const meetingProposalStatusEnum = pgEnum("meeting_proposal_status", [
   "rejected"
 ]);
 
+export const chatMessageRoleEnum = pgEnum("chat_message_role", [
+  "user",
+  "assistant",
+  "system"
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
@@ -405,6 +411,52 @@ export const briefings = pgTable(
     unique("briefings_workspace_date_unique").on(table.workspaceId, table.briefingDate),
     index("briefings_workspace_id_idx").on(table.workspaceId),
     index("briefings_briefing_date_idx").on(table.briefingDate)
+  ]
+);
+
+export const chatConversations = pgTable(
+  "chat_conversations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    index("chat_conversations_workspace_id_idx").on(table.workspaceId),
+    index("chat_conversations_user_id_idx").on(table.userId),
+    index("chat_conversations_updated_at_idx").on(table.updatedAt)
+  ]
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => chatConversations.id, { onDelete: "cascade" }),
+    clientMessageId: text("client_message_id"),
+    role: chatMessageRoleEnum("role").notNull(),
+    parts: jsonb("parts").notNull().default([]),
+    sourceTypes: sourceTypeEnum("source_types").array().notNull().default([]),
+    citations: jsonb("citations").notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    unique("chat_messages_conversation_client_message_unique").on(
+      table.conversationId,
+      table.clientMessageId
+    ),
+    index("chat_messages_conversation_id_idx").on(table.conversationId),
+    index("chat_messages_created_at_idx").on(table.createdAt)
   ]
 );
 

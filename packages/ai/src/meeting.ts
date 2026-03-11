@@ -6,10 +6,10 @@ import { MEETING_EXTRACTION_PROMPT } from "./prompts";
 
 const meetingProposalSchema = z.object({
   hasSchedulingIntent: z.boolean(),
-  title: z.string().min(1).optional(),
+  title: z.string().min(1).nullable(),
   startsAt: z.string().datetime().nullable(),
   endsAt: z.string().datetime().nullable(),
-  attendees: z.array(z.string().email()).default([]),
+  attendees: z.array(z.string().email()),
   rationale: z.string().min(1)
 });
 

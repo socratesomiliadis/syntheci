@@ -8,9 +8,6 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.string().url(),
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
-  GOOGLE_PUBSUB_VERIFICATION_TOKEN: z.string().min(1),
-  GOOGLE_PUBSUB_TOPIC: z.string().min(1),
-  GOOGLE_PUBSUB_SUBSCRIPTION: z.string().min(1),
   MINIO_ENDPOINT: z.string().url(),
   MINIO_REGION: z.string().min(1),
   MINIO_ACCESS_KEY: z.string().min(1),
@@ -29,12 +26,6 @@ export const env = envSchema.parse({
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "replace-me",
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "replace-me",
-  GOOGLE_PUBSUB_VERIFICATION_TOKEN:
-    process.env.GOOGLE_PUBSUB_VERIFICATION_TOKEN ?? "replace-me",
-  GOOGLE_PUBSUB_TOPIC: process.env.GOOGLE_PUBSUB_TOPIC ?? "projects/your-project/topics/gmail-push",
-  GOOGLE_PUBSUB_SUBSCRIPTION:
-    process.env.GOOGLE_PUBSUB_SUBSCRIPTION ??
-    "projects/your-project/subscriptions/gmail-push-sub",
   MINIO_ENDPOINT: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
   MINIO_REGION: process.env.MINIO_REGION ?? "us-east-1",
   MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY ?? "minioadmin",

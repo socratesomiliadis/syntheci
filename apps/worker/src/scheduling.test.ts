@@ -59,8 +59,7 @@ vi.mock("./logger", () => ({
 
 import {
   enqueueDueDailyBriefings,
-  enqueueDueGmailWatchRenewals,
-  enqueueGmailHistoryFallbackSync
+  enqueueDueGmailPollSync
 } from "./scheduling";
 
 describe("scheduler queueing", () => {
@@ -120,27 +119,23 @@ describe("scheduler queueing", () => {
     expect(mocks.briefingsFindFirstMock).not.toHaveBeenCalled();
   });
 
-  it("enqueues watch renewal only for accounts needing renewal", async () => {
+  it("enqueues Gmail sync for each connected Google account", async () => {
     mocks.connectedAccountsFindManyMock.mockResolvedValue([
       {
         id: "account-1",
-        workspaceId: "workspace-1",
-        metadata: {}
+        workspaceId: "workspace-1"
       },
       {
         id: "account-2",
-        workspaceId: "workspace-2",
-        metadata: {
-          watchExpiration: Date.now() + 7 * 60 * 60 * 1000
-        }
+        workspaceId: "workspace-2"
       }
     ]);
 
-    await enqueueDueGmailWatchRenewals();
+    await enqueueDueGmailPollSync();
 
-    expect(mocks.queueAddMocks[1]).toHaveBeenCalledTimes(1);
+    expect(mocks.queueAddMocks[1]).toHaveBeenCalledTimes(2);
     expect(mocks.queueAddMocks[1]).toHaveBeenCalledWith(
-      "renew-gmail-watch",
+      "sync-gmail-account",
       expect.objectContaining({
         connectedAccountId: "account-1"
       }),
@@ -148,32 +143,10 @@ describe("scheduler queueing", () => {
         attempts: 3
       })
     );
-  });
-
-  it("enqueues history sync only for accounts with stored history id", async () => {
-    mocks.connectedAccountsFindManyMock.mockResolvedValue([
-      {
-        id: "account-1",
-        workspaceId: "workspace-1",
-        metadata: {
-          watchHistoryId: "1234"
-        }
-      },
-      {
-        id: "account-2",
-        workspaceId: "workspace-2",
-        metadata: {}
-      }
-    ]);
-
-    await enqueueGmailHistoryFallbackSync();
-
-    expect(mocks.queueAddMocks[1]).toHaveBeenCalledTimes(1);
     expect(mocks.queueAddMocks[1]).toHaveBeenCalledWith(
-      "ingest-gmail-history-sync",
+      "sync-gmail-account",
       expect.objectContaining({
-        connectedAccountId: "account-1",
-        historyId: "1234"
+        connectedAccountId: "account-2"
       }),
       expect.objectContaining({
         attempts: 3

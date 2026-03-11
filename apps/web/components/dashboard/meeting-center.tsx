@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Loader2 } from "lucide-react";
+import { CalendarClock, Loader2, PencilLine } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import type { MeetingProposalStatus } from "@syntheci/shared";
@@ -20,6 +20,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface MeetingProposalItem {
   id: string;
@@ -36,6 +38,94 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
   const [busyProposalId, setBusyProposalId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
+  const [editStartsAt, setEditStartsAt] = useState("");
+  const [editEndsAt, setEditEndsAt] = useState("");
+
+  function isSchedulable(proposal: MeetingProposalItem) {
+    return Boolean(proposal.startsAt && proposal.endsAt);
+  }
+
+  function toDateTimeLocalValue(value: string | null) {
+    if (!value) return "";
+
+    const date = new Date(value);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+    const hours = `${date.getHours()}`.padStart(2, "0");
+    const minutes = `${date.getMinutes()}`.padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  function openEditor(proposal: MeetingProposalItem) {
+    setEditingProposalId(proposal.id);
+    setEditStartsAt(toDateTimeLocalValue(proposal.startsAt));
+    setEditEndsAt(toDateTimeLocalValue(proposal.endsAt));
+    setStatus(null);
+  }
+
+  function closeEditor() {
+    setEditingProposalId(null);
+    setEditStartsAt("");
+    setEditEndsAt("");
+  }
+
+  async function saveProposalTiming(proposal: MeetingProposalItem) {
+    if (!editStartsAt || !editEndsAt) {
+      setStatusTone("error");
+      setStatus("Start and end time are required.");
+      return;
+    }
+
+    setBusyProposalId(proposal.id);
+    setStatus(null);
+
+    try {
+      const response = await fetch(`/api/meetings/proposals/${proposal.id}`, {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          startsAt: new Date(editStartsAt).toISOString(),
+          endsAt: new Date(editEndsAt).toISOString()
+        })
+      });
+      const payload = (await response.json()) as {
+        status?: MeetingProposalStatus;
+        startsAt?: string | null;
+        endsAt?: string | null;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "timing update failed");
+      }
+
+      setProposals((prev) =>
+        prev.map((current) =>
+          current.id === proposal.id
+            ? {
+                ...current,
+                status: payload.status ?? current.status,
+                startsAt: payload.startsAt ?? current.startsAt,
+                endsAt: payload.endsAt ?? current.endsAt
+              }
+            : current
+        )
+      );
+      setStatusTone("success");
+      setStatus("Proposal timing updated.");
+      closeEditor();
+    } catch (error) {
+      setStatusTone("error");
+      setStatus(error instanceof Error ? error.message : "timing update failed");
+    } finally {
+      setBusyProposalId(null);
+    }
+  }
 
   async function updateProposal(proposalId: string, action: "approve" | "create") {
     setBusyProposalId(proposalId);
@@ -44,11 +134,13 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
       const response = await fetch(`/api/meetings/proposals/${proposalId}/${action}`, {
         method: "POST"
       });
-      if (!response.ok) throw new Error(`${action} failed`);
-      const payload = (await response.json()) as { status: MeetingProposalStatus };
+      const payload = (await response.json()) as { status?: MeetingProposalStatus; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? `${action} failed`);
       setProposals((prev) =>
         prev.map((proposal) =>
-          proposal.id === proposalId ? { ...proposal, status: payload.status } : proposal
+          proposal.id === proposalId && payload.status
+            ? { ...proposal, status: payload.status }
+            : proposal
         )
       );
       setStatusTone("success");
@@ -133,22 +225,109 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
                       <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
                         {proposal.startsAt ?? "TBD"} - {proposal.endsAt ?? "TBD"} ({proposal.timezone})
                       </p>
+                      {!isSchedulable(proposal) ? (
+                        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                          Missing start/end time. Extract from a message with explicit timing before approval or calendar creation.
+                        </p>
+                      ) : null}
                       <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
                         Attendees: {proposal.attendees.join(", ") || "(none)"}
                       </p>
+                      <AnimatePresence initial={false}>
+                        {editingProposalId === proposal.id ? (
+                          <motion.div
+                            key={`${proposal.id}-editor`}
+                            className="space-y-3 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                          >
+                            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                              <CalendarClock className="size-3.5 text-blue-600" />
+                              Timing Editor
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`${proposal.id}-starts-at`} className="text-xs text-slate-600">
+                                  Start
+                                </Label>
+                                <Input
+                                  id={`${proposal.id}-starts-at`}
+                                  type="datetime-local"
+                                  value={editStartsAt}
+                                  onChange={(event) => setEditStartsAt(event.target.value)}
+                                  className="h-9 border-slate-200 bg-slate-50 text-sm"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label htmlFor={`${proposal.id}-ends-at`} className="text-xs text-slate-600">
+                                  End
+                                </Label>
+                                <Input
+                                  id={`${proposal.id}-ends-at`}
+                                  type="datetime-local"
+                                  value={editEndsAt}
+                                  onChange={(event) => setEditEndsAt(event.target.value)}
+                                  className="h-9 border-slate-200 bg-slate-50 text-sm"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-slate-500">
+                              Saved using your current browser timezone. Current meeting timezone: {proposal.timezone}.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => saveProposalTiming(proposal)}
+                                disabled={busyProposalId === proposal.id}
+                              >
+                                Save time
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={closeEditor}
+                                disabled={busyProposalId === proposal.id}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                       <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
                           variant="outline"
+                          onClick={() => openEditor(proposal)}
+                          disabled={busyProposalId === proposal.id || proposal.status === "created"}
+                        >
+                          <PencilLine className="mr-1 size-3.5" />
+                          Edit time
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
                           onClick={() => updateProposal(proposal.id, "approve")}
-                          disabled={busyProposalId === proposal.id || proposal.status !== "proposed"}
+                          disabled={
+                            busyProposalId === proposal.id ||
+                            proposal.status !== "proposed" ||
+                            !isSchedulable(proposal)
+                          }
                         >
                           Approve
                         </Button>
                         <Button
                           type="button"
                           onClick={() => updateProposal(proposal.id, "create")}
-                          disabled={busyProposalId === proposal.id || proposal.status !== "approved"}
+                          disabled={
+                            busyProposalId === proposal.id ||
+                            proposal.status !== "approved" ||
+                            !isSchedulable(proposal)
+                          }
                         >
                           Create event
                         </Button>

@@ -28,6 +28,12 @@ export async function POST(
   if (proposal.status !== "proposed") {
     return NextResponse.json({ error: "proposal must be in proposed state" }, { status: 400 });
   }
+  if (!proposal.startsAt || !proposal.endsAt) {
+    return NextResponse.json(
+      { error: "proposal missing start/end time; extract or confirm timing first" },
+      { status: 400 }
+    );
+  }
 
   const [updated] = await db
     .update(meetingProposals)

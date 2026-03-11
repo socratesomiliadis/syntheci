@@ -1,6 +1,8 @@
 "use client";
 
-import { Link2 } from "lucide-react";
+import { startTransition, useState } from "react";
+
+import { Link2, Loader2, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import {
@@ -11,7 +13,8 @@ import {
   withStagger
 } from "@/components/dashboard/motion-presets";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +26,43 @@ interface ConnectorStatus {
 }
 
 export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] }) {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
+
+  async function syncGmail() {
+    setIsSyncing(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch("/api/connectors/google/sync", {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error(response.status === 404 ? "Connect Gmail first." : "Gmail sync failed.");
+      }
+
+      const payload = (await response.json()) as {
+        queued: number;
+      };
+
+      setStatusTone("success");
+      startTransition(() =>
+        setStatus(
+          payload.queued === 1
+            ? "Gmail sync queued. Refresh in a few seconds."
+            : `${payload.queued} Gmail sync jobs queued.`
+        )
+      );
+    } catch (error) {
+      setStatusTone("error");
+      setStatus(error instanceof Error ? error.message : "Gmail sync failed.");
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
   return (
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
       <Card className="h-full border-slate-200 shadow-sm">
@@ -67,7 +107,35 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
               <Link2 className="mr-2 size-4" />
               Connect Gmail/Calendar
             </a>
+            <Button type="button" variant="outline" onClick={() => void syncGmail()} disabled={isSyncing}>
+              {isSyncing ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 size-4" />
+              )}
+              Sync Gmail Now
+            </Button>
           </div>
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {status ? (
+              <motion.p
+                key={`connector-status-${statusTone}-${status}`}
+                layout
+                className={
+                  statusTone === "error"
+                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                }
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={statusReveal}
+              >
+                {status}
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
 
           <AnimatePresence mode="popLayout" initial={false}>
             {connectors.length === 0 ? (

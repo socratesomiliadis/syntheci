@@ -1,5 +1,7 @@
 export type SourceType = "gmail" | "note" | "upload" | "link";
 
+export type ChatMessageRole = "user" | "assistant" | "system";
+
 export type TriageLabel =
   | "urgent"
   | "needs_reply"
@@ -25,6 +27,38 @@ export interface ChatCitation {
   startOffset: number;
   endOffset: number;
   deepLink: string | null;
+}
+
+export interface ChatMessagePart {
+  type: string;
+  [key: string]: unknown;
+}
+
+export interface ChatSourceFilters {
+  sourceTypes?: SourceType[];
+}
+
+export interface ChatConversationSummary {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  latestMessageAt: string | null;
+  preview: string | null;
+}
+
+export interface ChatConversationMessage {
+  id: string;
+  conversationId: string;
+  role: ChatMessageRole;
+  parts: ChatMessagePart[];
+  sourceTypes?: SourceType[];
+  citations: ChatCitation[];
+  createdAt: string;
+}
+
+export interface ChatConversationDetail extends ChatConversationSummary {
+  messages: ChatConversationMessage[];
 }
 
 export interface BriefingItem {

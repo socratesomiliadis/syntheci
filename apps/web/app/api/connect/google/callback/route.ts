@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { connectedAccounts, db } from "@syntheci/db";
-import { eq } from "drizzle-orm";
+import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
 
 import { upsertConnectedAccount, upsertSource } from "@/lib/connectors";
-import { exchangeGoogleCodeForTokens, setupGmailWatch } from "@/lib/google";
+import { exchangeGoogleCodeForTokens } from "@/lib/google";
+import { buildIdempotencyKey } from "@/lib/idempotency";
+import { upsertJobAudit } from "@/lib/jobs-audit";
+import { enqueueJob, ingestionQueue } from "@/lib/queue";
 import { requireWorkspaceContext } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
@@ -73,22 +75,35 @@ export async function GET(request: NextRequest) {
     }
   });
 
-  const watch = await setupGmailWatch({
-    accessToken: tokens.access_token,
-    refreshToken: tokens.refresh_token
+  const idempotencyKey = buildIdempotencyKey(
+    "gmail-connect-sync",
+    workspaceId,
+    connectedAccount.id,
+    Date.now()
+  );
+
+  await upsertJobAudit({
+    workspaceId,
+    queueName: QUEUE_NAMES.ingestion,
+    jobName: JOB_NAMES.SYNC_GMAIL_ACCOUNT,
+    idempotencyKey,
+    payload: {
+      connectedAccountId: connectedAccount.id,
+      reason: "initial_connect"
+    },
+    status: "queued"
   });
 
-  await db
-    .update(connectedAccounts)
-    .set({
-      metadata: {
-        ...(connectedAccount.metadata as Record<string, unknown>),
-        watchHistoryId: watch.historyId ?? null,
-        watchExpiration: watch.expiration ?? null
-      },
-      updatedAt: new Date()
-    })
-    .where(eq(connectedAccounts.id, connectedAccount.id));
+  await enqueueJob({
+    queue: ingestionQueue,
+    name: JOB_NAMES.SYNC_GMAIL_ACCOUNT,
+    payload: {
+      workspaceId,
+      connectedAccountId: connectedAccount.id,
+      idempotencyKey,
+      reason: "initial_connect"
+    }
+  });
 
   return NextResponse.redirect(new URL("/dashboard?connected=google", request.url));
 }

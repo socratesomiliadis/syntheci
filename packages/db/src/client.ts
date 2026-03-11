@@ -10,7 +10,8 @@ const globalForDb = globalThis as unknown as {
 export const pool =
   globalForDb.pool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString:
+      process.env.DATABASE_URL ?? "postgres://syntheci:syntheci@localhost:5432/syntheci"
   });
 
 if (process.env.NODE_ENV !== "production") {

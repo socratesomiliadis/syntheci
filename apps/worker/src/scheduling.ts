@@ -76,64 +76,19 @@ export async function enqueueDueDailyBriefings() {
   }
 }
 
-export async function enqueueDueGmailWatchRenewals() {
+export async function enqueueDueGmailPollSync() {
   const googleAccounts = await db.query.connectedAccounts.findMany({
     where: eq(connectedAccounts.provider, "google")
   });
 
-  const now = Date.now();
+  const syncBucket = Math.floor(Date.now() / (5 * 60 * 1000));
   for (const account of googleAccounts) {
-    const expirationRaw = (account.metadata as Record<string, unknown>)?.watchExpiration;
-    const expirationMs =
-      typeof expirationRaw === "string" || typeof expirationRaw === "number"
-        ? Number(expirationRaw)
-        : 0;
-
-    const shouldRenew = !expirationMs || expirationMs - now < 6 * 60 * 60 * 1000;
-    if (!shouldRenew) {
-      continue;
-    }
-
-    const key = `renew-watch:${account.id}:${new Date().toISOString().slice(0, 10)}`;
+    const key = `gmail-sync:${account.id}:${syncBucket}`;
     await ingestionSchedulerQueue.add(
-      JOB_NAMES.RENEW_GMAIL_WATCH,
+      JOB_NAMES.SYNC_GMAIL_ACCOUNT,
       {
         workspaceId: account.workspaceId,
         connectedAccountId: account.id,
-        idempotencyKey: key
-      },
-      {
-        jobId: key,
-        removeOnComplete: 200,
-        removeOnFail: 1000,
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1500
-        }
-      }
-    );
-  }
-}
-
-export async function enqueueGmailHistoryFallbackSync() {
-  const googleAccounts = await db.query.connectedAccounts.findMany({
-    where: eq(connectedAccounts.provider, "google")
-  });
-
-  for (const account of googleAccounts) {
-    const historyId = (account.metadata as Record<string, unknown>)?.watchHistoryId;
-    if (!historyId || typeof historyId !== "string") {
-      continue;
-    }
-
-    const key = `history-sync:${account.id}:${new Date().toISOString().slice(0, 10)}`;
-    await ingestionSchedulerQueue.add(
-      JOB_NAMES.INGEST_GMAIL_HISTORY_SYNC,
-      {
-        workspaceId: account.workspaceId,
-        connectedAccountId: account.id,
-        historyId,
         idempotencyKey: key
       },
       {
@@ -153,20 +108,12 @@ export async function enqueueGmailHistoryFallbackSync() {
 export function startDailyBriefingScheduler() {
   const intervalMs = 5 * 60 * 1000;
   const timer = setInterval(() => {
-    void Promise.all([
-      enqueueDueDailyBriefings(),
-      enqueueDueGmailWatchRenewals(),
-      enqueueGmailHistoryFallbackSync()
-    ]).catch((error) => {
+    void Promise.all([enqueueDueDailyBriefings(), enqueueDueGmailPollSync()]).catch((error) => {
       logger.error({ error: error instanceof Error ? error.message : error }, "Scheduler sweep failed");
     });
   }, intervalMs);
 
-  void Promise.all([
-    enqueueDueDailyBriefings(),
-    enqueueDueGmailWatchRenewals(),
-    enqueueGmailHistoryFallbackSync()
-  ]).catch((error) => {
+  void Promise.all([enqueueDueDailyBriefings(), enqueueDueGmailPollSync()]).catch((error) => {
     logger.error({ error: error instanceof Error ? error.message : error }, "Scheduler initial sweep failed");
   });
 

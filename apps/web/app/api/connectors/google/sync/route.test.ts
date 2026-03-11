@@ -1,16 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  requireWorkspaceContextMock: vi.fn(),
   connectedAccountsFindManyMock: vi.fn(),
   buildIdempotencyKeyMock: vi.fn(),
   upsertJobAuditMock: vi.fn(),
   enqueueJobMock: vi.fn()
 }));
 
-vi.mock("@/lib/env", () => ({
-  env: {
-    GOOGLE_PUBSUB_VERIFICATION_TOKEN: "test-token"
-  }
+vi.mock("@/lib/session", () => ({
+  requireWorkspaceContext: mocks.requireWorkspaceContextMock
 }));
 
 vi.mock("@/lib/idempotency", () => ({
@@ -28,7 +27,7 @@ vi.mock("@/lib/queue", () => ({
 
 vi.mock("@syntheci/db", () => ({
   connectedAccounts: {
-    provider: "provider"
+    workspaceId: "workspace_id"
   },
   db: {
     query: {
@@ -41,67 +40,48 @@ vi.mock("@syntheci/db", () => ({
 
 import { POST } from "./route";
 
-describe("POST /api/webhooks/gmail", () => {
+describe("POST /api/connectors/google/sync", () => {
   beforeEach(() => {
+    mocks.requireWorkspaceContextMock.mockResolvedValue({
+      workspaceId: "workspace-1"
+    });
     mocks.connectedAccountsFindManyMock.mockReset();
     mocks.buildIdempotencyKeyMock.mockReset();
     mocks.upsertJobAuditMock.mockReset();
     mocks.enqueueJobMock.mockReset();
-    mocks.buildIdempotencyKeyMock.mockReturnValue("idem-gmail");
+    mocks.buildIdempotencyKeyMock.mockReturnValue("idem-sync");
     mocks.upsertJobAuditMock.mockResolvedValue(undefined);
     mocks.enqueueJobMock.mockResolvedValue(undefined);
   });
 
-  it("rejects invalid verification token", async () => {
-    const request = {
-      nextUrl: new URL("http://localhost/api/webhooks/gmail?token=wrong"),
-      json: vi.fn().mockResolvedValue({})
-    } as never;
+  it("returns 404 when there is no Google connector", async () => {
+    mocks.connectedAccountsFindManyMock.mockResolvedValue([]);
 
-    const response = await POST(request);
-    expect(response.status).toBe(401);
+    const response = await POST();
+    expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
-      error: "invalid token"
+      error: "google connector not found"
     });
   });
 
-  it("queues ingestion when connected account is matched by email", async () => {
+  it("queues Gmail sync jobs for Google accounts in the workspace", async () => {
     mocks.connectedAccountsFindManyMock.mockResolvedValue([
       {
         id: "account-1",
-        workspaceId: "workspace-1",
-        metadata: {
-          email: "user@example.com"
-        }
+        provider: "google"
       }
     ]);
 
-    const envelope = Buffer.from(
-      JSON.stringify({
-        emailAddress: "user@example.com",
-        historyId: "9999"
-      }),
-      "utf8"
-    ).toString("base64");
-
-    const request = {
-      nextUrl: new URL("http://localhost/api/webhooks/gmail?token=test-token"),
-      json: vi.fn().mockResolvedValue({
-        message: {
-          data: envelope,
-          messageId: "pubsub-1"
-        }
-      })
-    } as never;
-
-    const response = await POST(request);
+    const response = await POST();
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
-      ok: true
+      ok: true,
+      queued: 1
     });
+    expect(mocks.upsertJobAuditMock).toHaveBeenCalledTimes(1);
     expect(mocks.enqueueJobMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "ingest-gmail-notification"
+        name: "sync-gmail-account"
       })
     );
   });

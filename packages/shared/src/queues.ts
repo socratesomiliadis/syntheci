@@ -10,8 +10,7 @@ export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 
 export const JOB_NAMES = {
   INGEST_GMAIL_NOTIFICATION: "ingest-gmail-notification",
-  INGEST_GMAIL_HISTORY_SYNC: "ingest-gmail-history-sync",
-  RENEW_GMAIL_WATCH: "renew-gmail-watch",
+  SYNC_GMAIL_ACCOUNT: "sync-gmail-account",
   PROCESS_DOCUMENT: "process-document",
   PROCESS_LINK: "process-link",
   PROCESS_NOTE: "process-note",
@@ -29,6 +28,11 @@ export interface BaseJobPayload {
 export interface IngestGmailNotificationPayload extends BaseJobPayload {
   connectedAccountId: string;
   historyId: string;
+}
+
+export interface SyncGmailAccountPayload extends BaseJobPayload {
+  connectedAccountId: string;
+  reason?: string;
 }
 
 export interface ProcessDocumentPayload extends BaseJobPayload {

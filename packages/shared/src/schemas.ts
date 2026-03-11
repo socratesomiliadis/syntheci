@@ -39,6 +39,20 @@ export const chatCitationSchema = z.object({
   deepLink: z.string().url().nullable()
 });
 
+export const chatMessageRoleSchema = z.enum([
+  "user",
+  "assistant",
+  "system"
+]);
+
+export const chatMessagePartSchema = z.object({
+  type: z.string().min(1)
+}).catchall(z.unknown());
+
+export const chatSourceFiltersSchema = z.object({
+  sourceTypes: z.array(sourceTypeSchema).optional()
+});
+
 export const triageResultSchema = z.object({
   label: triageLabelSchema,
   confidence: z.number().min(0).max(1),
@@ -68,6 +82,29 @@ export const dailyBriefingSchema = z.object({
 export const chatAnswerSchema = z.object({
   answer: z.string().min(1),
   citations: z.array(chatCitationSchema)
+});
+
+export const chatConversationSummarySchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  latestMessageAt: z.string().datetime().nullable(),
+  preview: z.string().nullable()
+});
+
+export const chatConversationMessageSchema = z.object({
+  id: z.string().uuid(),
+  conversationId: z.string().uuid(),
+  role: chatMessageRoleSchema,
+  parts: z.array(chatMessagePartSchema),
+  sourceTypes: z.array(sourceTypeSchema).optional(),
+  citations: z.array(chatCitationSchema).default([]),
+  createdAt: z.string().datetime()
+});
+
+export const chatConversationDetailSchema = chatConversationSummarySchema.extend({
+  messages: z.array(chatConversationMessageSchema)
 });
 
 export const sourceFilterSchema = z.object({

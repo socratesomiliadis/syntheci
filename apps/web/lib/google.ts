@@ -51,33 +51,6 @@ export async function exchangeGoogleCodeForTokens(input: {
   };
 }
 
-export async function setupGmailWatch(input: {
-  accessToken: string;
-  refreshToken?: string | null;
-}) {
-  const client = createGoogleOAuthClient(`${env.APP_BASE_URL}/api/connect/google/callback`);
-  client.setCredentials({
-    access_token: input.accessToken,
-    refresh_token: input.refreshToken ?? undefined
-  });
-
-  const gmail = google.gmail({
-    version: "v1",
-    auth: client
-  });
-
-  const response = await gmail.users.watch({
-    userId: "me",
-    requestBody: {
-      topicName: env.GOOGLE_PUBSUB_TOPIC,
-      labelFilterBehavior: "include",
-      labelIds: ["INBOX"]
-    }
-  });
-
-  return response.data;
-}
-
 export async function createCalendarEvent(input: {
   accessToken: string;
   refreshToken?: string | null;

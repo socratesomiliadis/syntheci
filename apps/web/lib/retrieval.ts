@@ -17,6 +17,17 @@ export interface RetrievedChunk {
   deepLink: string | null;
 }
 
+export function buildSourceFilter(sourceTypes?: SourceType[]) {
+  if (!sourceTypes || sourceTypes.length === 0) {
+    return sql``;
+  }
+
+  return sql`and s.type in (${sql.join(
+    sourceTypes.map((sourceType) => sql`${sourceType}`),
+    sql`, `
+  )})`;
+}
+
 export async function retrieveContextChunks(input: {
   workspaceId: string;
   question: string;
@@ -26,11 +37,7 @@ export async function retrieveContextChunks(input: {
   const embedding = await embedQuery(input.question);
   const vectorLiteral = toVectorLiteral(embedding);
   const limit = input.limit ?? 12;
-
-  const sourceFilter =
-    input.sourceTypes && input.sourceTypes.length > 0
-      ? sql`and s.type = any(${input.sourceTypes})`
-      : sql``;
+  const sourceFilter = buildSourceFilter(input.sourceTypes);
 
   const result = await db.execute(sql`
     with ranked as (

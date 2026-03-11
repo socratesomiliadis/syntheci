@@ -48,6 +48,33 @@ describe("extractMeetingProposal", () => {
     });
   });
 
+  it("allows a null title when there is no scheduling intent", async () => {
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        hasSchedulingIntent: false,
+        title: null,
+        startsAt: null,
+        endsAt: null,
+        attendees: [],
+        rationale: "No concrete scheduling request."
+      }
+    });
+
+    await expect(
+      extractMeetingProposal({
+        body: "Thanks for the update.",
+        timezone: "Europe/Athens"
+      })
+    ).resolves.toEqual({
+      hasSchedulingIntent: false,
+      title: null,
+      startsAt: null,
+      endsAt: null,
+      attendees: [],
+      rationale: "No concrete scheduling request."
+    });
+  });
+
   it("rejects malformed attendees", async () => {
     mocks.generateObjectMock.mockResolvedValue({
       object: {

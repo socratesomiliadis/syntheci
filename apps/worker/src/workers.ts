@@ -7,7 +7,7 @@ import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
 import { logger } from "./logger";
 import { buildAndStoreBriefing } from "./services/briefing";
 import { extractTextFromObject, extractTextFromUrl } from "./services/extractors";
-import { ingestGmailNotification, renewGmailWatch } from "./services/gmail";
+import { ingestGmailNotification, syncGmailAccount } from "./services/gmail";
 import { indexDocumentText } from "./services/indexing";
 import { redis } from "./redis";
 import { markJobStatus } from "./utils/jobs-audit";
@@ -65,24 +65,12 @@ function processIngestionJob(job: Job) {
       return;
     }
 
-    if (job.name === JOB_NAMES.INGEST_GMAIL_HISTORY_SYNC) {
+    if (job.name === JOB_NAMES.SYNC_GMAIL_ACCOUNT) {
       const data = job.data as BaseJobData & {
         connectedAccountId: string;
-        historyId: string;
+        reason?: string;
       };
-      await ingestGmailNotification({
-        workspaceId: data.workspaceId,
-        connectedAccountId: data.connectedAccountId,
-        historyId: data.historyId
-      });
-      return;
-    }
-
-    if (job.name === JOB_NAMES.RENEW_GMAIL_WATCH) {
-      const data = job.data as BaseJobData & {
-        connectedAccountId: string;
-      };
-      await renewGmailWatch({
+      await syncGmailAccount({
         workspaceId: data.workspaceId,
         connectedAccountId: data.connectedAccountId
       });
