@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const sourceTypeSchema = z.enum([
   "gmail",
-  "slack",
   "note",
   "upload",
   "link"

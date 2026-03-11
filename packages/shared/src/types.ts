@@ -1,4 +1,4 @@
-export type SourceType = "gmail" | "slack" | "note" | "upload" | "link";
+export type SourceType = "gmail" | "note" | "upload" | "link";
 
 export type TriageLabel =
   | "urgent"

@@ -9,7 +9,6 @@ import { buildAndStoreBriefing } from "./services/briefing";
 import { extractTextFromObject, extractTextFromUrl } from "./services/extractors";
 import { ingestGmailNotification, renewGmailWatch } from "./services/gmail";
 import { indexDocumentText } from "./services/indexing";
-import { ingestSlackEvent } from "./services/slack";
 import { redis } from "./redis";
 import { markJobStatus } from "./utils/jobs-audit";
 
@@ -86,19 +85,6 @@ function processIngestionJob(job: Job) {
       await renewGmailWatch({
         workspaceId: data.workspaceId,
         connectedAccountId: data.connectedAccountId
-      });
-      return;
-    }
-
-    if (job.name === JOB_NAMES.INGEST_SLACK_EVENT) {
-      const data = job.data as BaseJobData & {
-        sourceId: string;
-        event: Record<string, unknown>;
-      };
-      await ingestSlackEvent({
-        workspaceId: data.workspaceId,
-        sourceId: data.sourceId,
-        event: data.event
       });
       return;
     }

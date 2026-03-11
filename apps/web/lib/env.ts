@@ -11,10 +11,6 @@ const envSchema = z.object({
   GOOGLE_PUBSUB_VERIFICATION_TOKEN: z.string().min(1),
   GOOGLE_PUBSUB_TOPIC: z.string().min(1),
   GOOGLE_PUBSUB_SUBSCRIPTION: z.string().min(1),
-  SLACK_CLIENT_ID: z.string().min(1),
-  SLACK_CLIENT_SECRET: z.string().min(1),
-  SLACK_SIGNING_SECRET: z.string().min(1),
-  SLACK_REDIRECT_URI: z.string().url(),
   MINIO_ENDPOINT: z.string().url(),
   MINIO_REGION: z.string().min(1),
   MINIO_ACCESS_KEY: z.string().min(1),
@@ -39,11 +35,6 @@ export const env = envSchema.parse({
   GOOGLE_PUBSUB_SUBSCRIPTION:
     process.env.GOOGLE_PUBSUB_SUBSCRIPTION ??
     "projects/your-project/subscriptions/gmail-push-sub",
-  SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID ?? "replace-me",
-  SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET ?? "replace-me",
-  SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET ?? "replace-me",
-  SLACK_REDIRECT_URI:
-    process.env.SLACK_REDIRECT_URI ?? "http://localhost:3000/api/connect/slack/callback",
   MINIO_ENDPOINT: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
   MINIO_REGION: process.env.MINIO_REGION ?? "us-east-1",
   MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY ?? "minioadmin",

@@ -12,7 +12,6 @@ export const JOB_NAMES = {
   INGEST_GMAIL_NOTIFICATION: "ingest-gmail-notification",
   INGEST_GMAIL_HISTORY_SYNC: "ingest-gmail-history-sync",
   RENEW_GMAIL_WATCH: "renew-gmail-watch",
-  INGEST_SLACK_EVENT: "ingest-slack-event",
   PROCESS_DOCUMENT: "process-document",
   PROCESS_LINK: "process-link",
   PROCESS_NOTE: "process-note",
@@ -30,11 +29,6 @@ export interface BaseJobPayload {
 export interface IngestGmailNotificationPayload extends BaseJobPayload {
   connectedAccountId: string;
   historyId: string;
-}
-
-export interface IngestSlackEventPayload extends BaseJobPayload {
-  sourceId: string;
-  event: Record<string, unknown>;
 }
 
 export interface ProcessDocumentPayload extends BaseJobPayload {

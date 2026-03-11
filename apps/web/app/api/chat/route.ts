@@ -7,7 +7,7 @@ import type { ChatCitation, SourceType } from "@syntheci/shared";
 import { retrieveContextChunks } from "@/lib/retrieval";
 import { requireWorkspaceContext } from "@/lib/session";
 
-const sourceTypeSchema = z.enum(["gmail", "slack", "note", "upload", "link"]);
+const sourceTypeSchema = z.enum(["gmail", "note", "upload", "link"]);
 
 const requestSchema = z.object({
   messages: z.array(z.any()).min(1),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, Slack } from "lucide-react";
+import { Link2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import {
@@ -30,10 +30,10 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg">Connectors</CardTitle>
             <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
-              Gmail + Slack
+              Google
             </Badge>
           </div>
-          <CardDescription>Connect channels to keep the workspace synced continuously.</CardDescription>
+          <CardDescription>Connect Gmail and Calendar to keep the workspace synced.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -55,7 +55,7 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
               className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2"
             >
               <p className="text-xs uppercase tracking-wide text-slate-500">Providers</p>
-              <p className="text-xl font-semibold text-slate-800">Gmail, Slack</p>
+              <p className="text-xl font-semibold text-slate-800">Gmail, Calendar</p>
             </motion.div>
           </div>
 
@@ -66,13 +66,6 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
             >
               <Link2 className="mr-2 size-4" />
               Connect Gmail/Calendar
-            </a>
-            <a
-              href="/api/connect/slack/start"
-              className={cn(buttonVariants({ variant: "outline" }), "inline-flex")}
-            >
-              <Slack className="mr-2 size-4" />
-              Connect Slack
             </a>
           </div>
 
@@ -87,7 +80,7 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
                 exit="exit"
                 variants={statusReveal}
               >
-                No connectors yet. Start by linking Gmail or Slack.
+                No connectors yet. Start by linking Gmail and Calendar.
               </motion.p>
             ) : (
               <motion.div key="connectors-list" layout className="space-y-3">

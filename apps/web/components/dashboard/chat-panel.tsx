@@ -37,7 +37,7 @@ import {
 } from "@/components/dashboard/motion-presets";
 import { cn } from "@/lib/utils";
 
-const sourceOptions: SourceType[] = ["gmail", "slack", "note", "upload", "link"];
+const sourceOptions: SourceType[] = ["gmail", "note", "upload", "link"];
 
 interface ChatMetadata {
   sourceTypes?: SourceType[];
@@ -96,7 +96,7 @@ export function ChatPanel() {
             <div className="space-y-1">
               <CardTitle className="text-lg">Knowledge Chat</CardTitle>
               <CardDescription>
-                Ask grounded questions across inbox, Slack, notes, uploads, and links.
+                Ask grounded questions across inbox, notes, uploads, and links.
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -261,7 +261,7 @@ export function ChatPanel() {
             }}
           >
             <PromptInputBody>
-              <PromptInputTextarea placeholder="Ask about an email, decision, file, or Slack thread..." />
+              <PromptInputTextarea placeholder="Ask about an email, decision, note, or file..." />
             </PromptInputBody>
             <PromptInputFooter>
               <div className="flex flex-wrap gap-2">

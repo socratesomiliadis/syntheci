@@ -16,7 +16,6 @@ import {
 
 export const sourceTypeEnum = pgEnum("source_type", [
   "gmail",
-  "slack",
   "note",
   "upload",
   "link"

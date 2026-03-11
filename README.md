@@ -3,7 +3,7 @@
 Syntheci is a hackathon MVP for an AI knowledge base / second brain system:
 
 - Better Auth + single workspace per user
-- Gmail + Slack ingestion
+- Gmail ingestion + Google Calendar actions
 - Upload + notes + link ingestion
 - Postgres + pgvector canonical store
 - MinIO file storage
@@ -42,10 +42,6 @@ Syntheci is a hackathon MVP for an AI knowledge base / second brain system:
   - `/api/connect/google/start`
   - `/api/connect/google/callback`
   - Gmail push webhook: `/api/webhooks/gmail?token=<GOOGLE_PUBSUB_VERIFICATION_TOKEN>`
-- Slack connector:
-  - `/api/connect/slack/start`
-  - `/api/connect/slack/callback`
-  - Slack events webhook: `/api/webhooks/slack/events`
 
 ## Data Flow
 

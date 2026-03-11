@@ -60,7 +60,7 @@ export default async function LoginPage() {
           <CardContent className="space-y-6">
             <GoogleSignInButton />
             <p className="text-xs text-slate-500">
-              By continuing, you authorize Gmail and Slack connection flows inside your workspace.
+              By continuing, you authorize the Google-based workspace flows used by the app.
             </p>
           </CardContent>
         </Card>

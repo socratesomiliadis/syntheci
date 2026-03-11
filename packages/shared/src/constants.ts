@@ -10,7 +10,6 @@ export const TRIAGE_WEIGHT: Record<TriageLabel, number> = {
 
 export const SOURCE_LABELS = {
   gmail: "Email",
-  slack: "Slack",
   note: "Note",
   upload: "Upload",
   link: "Link"

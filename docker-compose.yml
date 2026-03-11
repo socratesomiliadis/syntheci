@@ -85,10 +85,6 @@ services:
       GOOGLE_PUBSUB_VERIFICATION_TOKEN: ${GOOGLE_PUBSUB_VERIFICATION_TOKEN:-replace-me}
       GOOGLE_PUBSUB_TOPIC: ${GOOGLE_PUBSUB_TOPIC:-projects/your-project/topics/gmail-push}
       GOOGLE_PUBSUB_SUBSCRIPTION: ${GOOGLE_PUBSUB_SUBSCRIPTION:-projects/your-project/subscriptions/gmail-push-sub}
-      SLACK_CLIENT_ID: ${SLACK_CLIENT_ID:-replace-me}
-      SLACK_CLIENT_SECRET: ${SLACK_CLIENT_SECRET:-replace-me}
-      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-replace-me}
-      SLACK_REDIRECT_URI: ${SLACK_REDIRECT_URI:-http://localhost:3000/api/connect/slack/callback}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-replace-me}
       OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4.1-mini}
       OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}

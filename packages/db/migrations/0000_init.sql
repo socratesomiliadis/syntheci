@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'source_type') THEN
-    CREATE TYPE source_type AS ENUM ('gmail', 'slack', 'note', 'upload', 'link');
+    CREATE TYPE source_type AS ENUM ('gmail', 'note', 'upload', 'link');
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'membership_role') THEN
     CREATE TYPE membership_role AS ENUM ('owner');
