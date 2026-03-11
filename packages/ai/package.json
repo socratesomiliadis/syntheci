@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
+    "@syntheci/db": "workspace:*",
     "@syntheci/shared": "workspace:*",
     "ai": "^6.0.116",
+    "drizzle-orm": "^0.44.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BookUser,
   Cable,
   CalendarRange,
   FileText,
@@ -28,6 +29,12 @@ export const dashboardNavItems: DashboardNavItem[] = [
     label: "Connectors",
     description: "Provider status and sync actions",
     icon: Cable
+  },
+  {
+    href: "/dashboard/contacts",
+    label: "Contacts",
+    description: "People graph enriched from mail and manual edits",
+    icon: BookUser
   },
   {
     href: "/dashboard/chat",

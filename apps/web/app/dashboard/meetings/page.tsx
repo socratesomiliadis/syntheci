@@ -1,6 +1,6 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
-import { db, meetingProposals } from "@syntheci/db";
+import { contacts, db, meetingProposals } from "@syntheci/db";
 
 import { MeetingCenter } from "@/components/dashboard/meeting-center";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,35 @@ export default async function MeetingsPage() {
       .from(meetingProposals)
       .where(and(eq(meetingProposals.workspaceId, workspaceId), eq(meetingProposals.status, "approved")))
   ]);
+
+  const attendeeEmails = [
+    ...new Set(
+      proposals
+        .flatMap((proposal) => ((proposal.attendees as string[]) ?? []).map((attendee) => attendee.trim().toLowerCase()))
+        .filter(Boolean)
+    )
+  ];
+
+  const attendeeContacts =
+    attendeeEmails.length > 0
+      ? await db.query.contacts.findMany({
+          where: and(eq(contacts.workspaceId, workspaceId), inArray(contacts.email, attendeeEmails))
+        })
+      : [];
+  const attendeeContactMap = new Map(
+    attendeeContacts
+      .filter((contact) => contact.email)
+      .map((contact) => [
+        contact.email!.toLowerCase(),
+        {
+          id: contact.id,
+          email: contact.email,
+          name: contact.name,
+          company: contact.company,
+          role: contact.role
+        }
+      ])
+  );
 
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
@@ -71,6 +100,9 @@ export default async function MeetingsPage() {
           endsAt: proposal.endsAt ? proposal.endsAt.toISOString() : null,
           timezone: proposal.timezone,
           attendees: (proposal.attendees as string[]) ?? [],
+          attendeeContacts: ((proposal.attendees as string[]) ?? [])
+            .map((attendee) => attendeeContactMap.get(attendee.trim().toLowerCase()))
+            .filter((contact): contact is NonNullable<typeof contact> => Boolean(contact)),
           status: proposal.status
         }))}
       />

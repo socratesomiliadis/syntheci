@@ -56,7 +56,7 @@ import {
   SheetTrigger
 } from "@/components/ui/sheet";
 
-const sourceOptions: SourceType[] = ["gmail", "note", "upload", "link"];
+const sourceOptions: SourceType[] = ["gmail", "note", "upload", "link", "contact"];
 
 function messageText(message: ChatMessage) {
   return message.parts
@@ -483,7 +483,7 @@ export function ChatPanel({
                 <div>
                   <CardTitle className="text-2xl tracking-tight">{activeConversationLabel}</CardTitle>
                   <CardDescription className="mt-1">
-                    Ask grounded questions across inbox, notes, uploads, and links with saved history per conversation.
+                    Ask grounded questions across inbox, contacts, notes, uploads, and links with saved history per conversation.
                   </CardDescription>
                 </div>
               </div>
@@ -658,7 +658,7 @@ export function ChatPanel({
               }}
             >
               <PromptInputBody>
-                <PromptInputTextarea placeholder="Ask about an email, decision, note, or file..." />
+                <PromptInputTextarea placeholder="Ask about a contact, email, decision, note, or file..." />
               </PromptInputBody>
               <PromptInputFooter>
                 <div className="flex flex-wrap gap-2">

@@ -1,4 +1,4 @@
-export type SourceType = "gmail" | "note" | "upload" | "link";
+export type SourceType = "gmail" | "note" | "upload" | "link" | "contact";
 
 export type ChatMessageRole = "user" | "assistant" | "system";
 

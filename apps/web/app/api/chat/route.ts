@@ -14,7 +14,7 @@ import type { ChatMessage as UIChatMessage } from "@/lib/chat-ui";
 import { retrieveContextChunks } from "@/lib/retrieval";
 import { requireWorkspaceContext } from "@/lib/session";
 
-const sourceTypeSchema = z.enum(["gmail", "note", "upload", "link"]);
+const sourceTypeSchema = z.enum(["gmail", "note", "upload", "link", "contact"]);
 
 const requestSchema = z.object({
   conversationId: z.string().uuid(),

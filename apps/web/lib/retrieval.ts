@@ -47,7 +47,7 @@ export async function retrieveContextChunks(input: {
         cc.source_id,
         coalesce(cc.message_id::text, cc.document_id::text) as message_or_doc_id,
         cc.content,
-        m.deep_link as deep_link,
+        coalesce(m.deep_link, d.external_url) as deep_link,
         (
           (1 - (cc.embedding <=> ${vectorLiteral}::vector)) * 0.72 +
           ts_rank_cd(
@@ -59,6 +59,7 @@ export async function retrieveContextChunks(input: {
       from content_chunks cc
       join sources s on s.id = cc.source_id
       left join messages m on m.id = cc.message_id
+      left join documents d on d.id = cc.document_id
       where cc.workspace_id = ${input.workspaceId}
       ${sourceFilter}
     )

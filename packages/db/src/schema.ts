@@ -18,7 +18,8 @@ export const sourceTypeEnum = pgEnum("source_type", [
   "gmail",
   "note",
   "upload",
-  "link"
+  "link",
+  "contact"
 ]);
 
 export const membershipRoleEnum = pgEnum("membership_role", ["owner"]);
@@ -232,6 +233,35 @@ export const sources = pgTable(
   ]
 );
 
+export const contacts = pgTable(
+  "contacts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name"),
+    email: text("email"),
+    phoneNumber: text("phone_number"),
+    company: text("company"),
+    role: text("role"),
+    notes: text("notes"),
+    origin: text("origin").notNull().default("manual"),
+    metadata: jsonb("metadata").notNull().default({}),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    unique("contacts_workspace_email_unique").on(table.workspaceId, table.email),
+    index("contacts_workspace_id_idx").on(table.workspaceId),
+    index("contacts_email_idx").on(table.email),
+    index("contacts_last_message_at_idx").on(table.lastMessageAt)
+  ]
+);
+
 export const messages = pgTable(
   "messages",
   {
@@ -242,6 +272,9 @@ export const messages = pgTable(
     sourceId: uuid("source_id")
       .notNull()
       .references(() => sources.id, { onDelete: "cascade" }),
+    senderContactId: uuid("sender_contact_id").references(() => contacts.id, {
+      onDelete: "set null"
+    }),
     externalMessageId: text("external_message_id").notNull(),
     externalThreadId: text("external_thread_id"),
     senderName: text("sender_name"),
@@ -261,6 +294,7 @@ export const messages = pgTable(
     unique("messages_source_external_unique").on(table.sourceId, table.externalMessageId),
     index("messages_workspace_id_idx").on(table.workspaceId),
     index("messages_source_id_idx").on(table.sourceId),
+    index("messages_sender_contact_id_idx").on(table.senderContactId),
     index("messages_received_at_idx").on(table.receivedAt)
   ]
 );
@@ -275,6 +309,7 @@ export const documents = pgTable(
     sourceId: uuid("source_id")
       .notNull()
       .references(() => sources.id, { onDelete: "cascade" }),
+    contactId: uuid("contact_id").references(() => contacts.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     mimeType: text("mime_type"),
     objectKey: text("object_key"),
@@ -287,7 +322,8 @@ export const documents = pgTable(
   },
   (table) => [
     index("documents_workspace_id_idx").on(table.workspaceId),
-    index("documents_source_id_idx").on(table.sourceId)
+    index("documents_source_id_idx").on(table.sourceId),
+    unique("documents_contact_unique").on(table.contactId)
   ]
 );
 

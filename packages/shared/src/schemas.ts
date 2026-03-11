@@ -4,7 +4,8 @@ export const sourceTypeSchema = z.enum([
   "gmail",
   "note",
   "upload",
-  "link"
+  "link",
+  "contact"
 ]);
 
 export const triageLabelSchema = z.enum([

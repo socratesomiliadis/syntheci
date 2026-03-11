@@ -15,6 +15,20 @@
       "when": 1773271920000,
       "tag": "0001_chat_history",
       "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773273180000,
+      "tag": "0002_contacts",
+      "breakpoints": false
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773270728364,
+      "tag": "0003_thick_leader",
+      "breakpoints": true
     }
   ]
 }

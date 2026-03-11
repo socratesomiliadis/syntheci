@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { and, desc, eq, sql } from "drizzle-orm";
-import { ArrowRight, CalendarRange, FileText, Inbox, Sparkles } from "lucide-react";
+import { ArrowRight, BookUser, CalendarRange, FileText, Inbox, Sparkles } from "lucide-react";
 
 import { briefings, db, draftReplies, meetingProposals } from "@syntheci/db";
 import type { BriefingItem } from "@syntheci/shared";
@@ -10,6 +10,7 @@ import { BriefingPanel } from "@/components/dashboard/briefing-panel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getContactCount } from "@/lib/contacts";
 import { getConnectorStatus, getOpenThreadCount, getPriorityInbox } from "@/lib/dashboard";
 import { requireWorkspaceContext } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,15 @@ export const dynamic = "force-dynamic";
 export default async function DashboardOverviewPage() {
   const { workspaceId } = await requireWorkspaceContext();
 
-  const [connectors, inbox, openThreadCount, latestBriefing, pendingDraftCount, pendingMeetingCount] =
+  const [
+    connectors,
+    inbox,
+    openThreadCount,
+    latestBriefing,
+    pendingDraftCount,
+    pendingMeetingCount,
+    contactCount
+  ] =
     await Promise.all([
       getConnectorStatus(workspaceId),
       getPriorityInbox(workspaceId),
@@ -39,7 +48,8 @@ export default async function DashboardOverviewPage() {
           count: sql<number>`count(*)::int`
         })
         .from(meetingProposals)
-        .where(and(eq(meetingProposals.workspaceId, workspaceId), eq(meetingProposals.status, "proposed")))
+        .where(and(eq(meetingProposals.workspaceId, workspaceId), eq(meetingProposals.status, "proposed"))),
+      getContactCount(workspaceId)
     ]);
 
   const briefingCount = latestBriefing ? ((latestBriefing.items as BriefingItem[]) ?? []).length : 0;
@@ -213,6 +223,13 @@ export default async function DashboardOverviewPage() {
                 </span>
                 <span>{pendingMeetings}</span>
               </Link>
+              <Link href="/dashboard/contacts" className="flex items-center justify-between rounded-[1.05rem] border border-slate-200/80 bg-slate-50/70 px-4 py-3 text-sm font-medium text-slate-800 transition-colors hover:bg-slate-100/80">
+                <span className="inline-flex items-center gap-2">
+                  <BookUser className="size-4 text-sky-700" />
+                  Contact Book
+                </span>
+                <span>{contactCount}</span>
+              </Link>
             </CardContent>
           </Card>
 
@@ -234,12 +251,18 @@ export default async function DashboardOverviewPage() {
                   {briefingCount}
                 </p>
               </div>
+              <div className="rounded-[1.1rem] border border-slate-200/80 bg-slate-50/70 px-4 py-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Known contacts</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  {contactCount}
+                </p>
+              </div>
               <div className="flex gap-3">
                 <Link href="/dashboard/connectors" className={cn(buttonVariants({ variant: "outline" }), "flex-1 rounded-xl")}>
                   Manage connectors
                 </Link>
-                <Link href="/dashboard/ingestion" className={cn(buttonVariants({ variant: "outline" }), "flex-1 rounded-xl")}>
-                  Open ingestion
+                <Link href="/dashboard/contacts" className={cn(buttonVariants({ variant: "outline" }), "flex-1 rounded-xl")}>
+                  Open contacts
                 </Link>
               </div>
               <Link href="/dashboard/chat" className={cn(buttonVariants({ variant: "default" }), "w-full rounded-xl justify-center")}>

@@ -12,6 +12,7 @@ import {
 
 import { logger } from "../logger";
 import { decryptSecret } from "../utils/crypto";
+import { syncSenderContact } from "./contacts";
 import { indexMessageText } from "./indexing";
 
 function createOAuthClient() {
@@ -131,12 +132,20 @@ async function persistMessageFromGmail(input: {
   const senderName = senderEmailMatch
     ? from?.replace(senderEmailMatch[0], "").trim().replace(/^"|"$/g, "") || null
     : null;
+  const receivedAt = dateHeader ? new Date(dateHeader) : new Date();
+  const senderContact = await syncSenderContact({
+    workspaceId: input.workspaceId,
+    senderName,
+    senderEmail,
+    receivedAt
+  });
 
   const [message] = await db
     .insert(messages)
     .values({
       workspaceId: input.workspaceId,
       sourceId: input.sourceId,
+      senderContactId: senderContact?.id ?? null,
       externalMessageId: full.data.id,
       externalThreadId: full.data.threadId ?? null,
       senderName,
@@ -145,7 +154,7 @@ async function persistMessageFromGmail(input: {
       textBody: textBody || "(empty)",
       htmlBody: null,
       deepLink: `https://mail.google.com/mail/u/0/#inbox/${full.data.id}`,
-      receivedAt: dateHeader ? new Date(dateHeader) : new Date(),
+      receivedAt,
       isUnread,
       isOpenThread: true,
       rawPayload: full.data as Record<string, unknown>
@@ -153,12 +162,13 @@ async function persistMessageFromGmail(input: {
     .onConflictDoUpdate({
       target: [messages.sourceId, messages.externalMessageId],
       set: {
+        senderContactId: senderContact?.id ?? null,
         externalThreadId: full.data.threadId ?? null,
         senderName,
         senderEmail,
         subject: subject ?? null,
         textBody: textBody || "(empty)",
-        receivedAt: dateHeader ? new Date(dateHeader) : new Date(),
+        receivedAt,
         isUnread,
         rawPayload: full.data as Record<string, unknown>,
         updatedAt: new Date()

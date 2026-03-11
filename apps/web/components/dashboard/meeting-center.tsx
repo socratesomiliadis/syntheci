@@ -30,6 +30,13 @@ interface MeetingProposalItem {
   endsAt: string | null;
   timezone: string;
   attendees: string[];
+  attendeeContacts: Array<{
+    id: string;
+    email: string | null;
+    name: string | null;
+    company: string | null;
+    role: string | null;
+  }>;
   status: MeetingProposalStatus;
 }
 
@@ -233,6 +240,19 @@ export function MeetingCenter({ initialProposals }: { initialProposals: MeetingP
                       <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
                         Attendees: {proposal.attendees.join(", ") || "(none)"}
                       </p>
+                      {proposal.attendeeContacts.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {proposal.attendeeContacts.map((contact) => (
+                            <span
+                              key={`${proposal.id}-${contact.id}`}
+                              className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] text-sky-800"
+                            >
+                              {contact.name ?? contact.email}
+                              {contact.company ? ` - ${contact.company}` : ""}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                       <AnimatePresence initial={false}>
                         {editingProposalId === proposal.id ? (
                           <motion.div
