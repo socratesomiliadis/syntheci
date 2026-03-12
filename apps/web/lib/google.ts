@@ -92,6 +92,36 @@ export async function createCalendarEvent(input: {
   return response.data;
 }
 
+export async function listCalendarEvents(input: {
+  accessToken: string;
+  refreshToken?: string | null;
+  timeMin: string;
+  timeMax: string;
+}) {
+  const client = createGoogleOAuthClient(`${env.APP_BASE_URL}/api/connect/google/callback`);
+  client.setCredentials({
+    access_token: input.accessToken,
+    refresh_token: input.refreshToken ?? undefined
+  });
+
+  const calendar = google.calendar({
+    version: "v3",
+    auth: client
+  });
+
+  const response = await calendar.events.list({
+    calendarId: "primary",
+    orderBy: "startTime",
+    singleEvents: true,
+    showDeleted: false,
+    maxResults: 250,
+    timeMin: input.timeMin,
+    timeMax: input.timeMax
+  });
+
+  return response.data.items ?? [];
+}
+
 export async function sendGmailReply(input: {
   accessToken: string;
   refreshToken?: string | null;
