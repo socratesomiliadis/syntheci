@@ -116,12 +116,12 @@ function ConversationList({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200/80 px-4 py-4">
+      <div className="flex items-center justify-between gap-3 border-b border-border/80 px-4 py-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             Chat history
           </p>
-          <p className="mt-1 text-sm text-slate-600">Private threads for this user.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Private threads for this user.</p>
         </div>
         <Button size="sm" className="rounded-xl" onClick={onCreateConversation}>
           <MessageSquarePlus className="size-3.5" />
@@ -131,7 +131,7 @@ function ConversationList({
 
       <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
         {conversations.length === 0 ? (
-          <div className="rounded-[1.05rem] border border-dashed border-slate-200 bg-slate-50/80 px-4 py-6 text-sm text-slate-500">
+          <div className="rounded-[1.05rem] border border-dashed border-border bg-muted/80 px-4 py-6 text-sm text-muted-foreground">
             No saved chats yet. Start a conversation to build your history.
           </div>
         ) : (
@@ -150,8 +150,8 @@ function ConversationList({
                 className={cn(
                   "rounded-[1.05rem] border px-3 py-3 transition-colors",
                   isActive
-                    ? "border-blue-200 bg-blue-50/90 shadow-sm"
-                    : "border-slate-200/80 bg-white/80 hover:bg-slate-50"
+                    ? "border-info/25 bg-info/10 shadow-sm"
+                    : "border-border/80 bg-card/80 hover:bg-muted"
                 )}
               >
                 {isEditing ? (
@@ -159,7 +159,7 @@ function ConversationList({
                     <Input
                       value={editingTitle}
                       onChange={(event) => onEditingTitleChange(event.target.value)}
-                      className="h-9 rounded-lg border-slate-200 bg-white"
+                      className="h-9 rounded-lg border-border bg-card"
                     />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={() => onSaveRename(conversation.id)}>
@@ -179,19 +179,19 @@ function ConversationList({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-slate-900">{conversation.title}</p>
-                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                          <p className="truncate font-medium text-foreground">{conversation.title}</p>
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
                             {conversation.preview ?? "No messages yet"}
                           </p>
                         </div>
                         {isLoadingConversation && isActive ? (
-                          <Loader2 className="mt-0.5 size-4 animate-spin text-slate-400" />
+                          <Loader2 className="mt-0.5 size-4 animate-spin text-muted-foreground" />
                         ) : null}
                       </div>
                     </button>
 
                     <div className="mt-3 flex items-center justify-between gap-3">
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                         {conversation.latestMessageAt
                           ? new Date(conversation.latestMessageAt).toLocaleDateString()
                           : "Empty"}
@@ -454,12 +454,12 @@ export function ChatPanel({
   return (
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
       <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
-        <Card className="hidden h-[calc(100vh-13rem)] rounded-[1.7rem] border-slate-200/80 bg-white/92 shadow-sm xl:flex">
+        <Card className="hidden h-[calc(100vh-13rem)] rounded-[1.7rem] border-border/80 bg-card/92 shadow-sm xl:flex">
           {rail}
         </Card>
 
-        <Card className="min-h-[42rem] rounded-[1.8rem] border-slate-200/80 bg-white/92 shadow-sm">
-          <CardHeader className="border-b border-slate-200/80 pb-4">
+        <Card className="min-h-[42rem] rounded-[1.8rem] border-border/80 bg-card/92 shadow-sm">
+          <CardHeader className="border-b border-border/80 pb-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 xl:hidden">
@@ -489,11 +489,11 @@ export function ChatPanel({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+                <Badge variant="secondary" className="tone-info">
                   <Sparkles className="mr-1 size-3.5" />
                   Streaming RAG
                 </Badge>
-                <Badge variant="outline" className="border-slate-300 text-slate-600">
+                <Badge variant="outline" className="border-border text-muted-foreground">
                   {selectedSources.length === 0 ? "All sources" : `${selectedSources.length} filters`}
                 </Badge>
               </div>
@@ -523,7 +523,7 @@ export function ChatPanel({
           </CardHeader>
 
           <CardContent className="space-y-4 pt-4">
-            <div className="relative h-[33rem] overflow-hidden rounded-[1.4rem] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.9),rgba(255,255,255,1))]">
+            <div className="relative h-[33rem] overflow-hidden rounded-[1.4rem] border border-border bg-[linear-gradient(180deg,rgba(248,250,252,0.9),rgba(255,255,255,1))]">
               <Conversation>
                 <ConversationContent className="gap-6 px-4 py-5">
                   <AnimatePresence mode="popLayout" initial={false}>
@@ -565,8 +565,8 @@ export function ChatPanel({
                               className={cn(
                                 "w-fit max-w-[92%] rounded-[1.2rem] border px-4 py-3 text-sm shadow-sm",
                                 isUser
-                                  ? "ml-auto border-blue-200 bg-blue-600 text-white"
-                                  : "border-slate-200 bg-white text-slate-800"
+                                  ? "ml-auto border-primary/25 bg-primary text-primary-foreground"
+                                  : "border-border bg-card text-foreground"
                               )}
                             >
                               <p className="whitespace-pre-wrap leading-6">{text || "..."}</p>
@@ -614,7 +614,7 @@ export function ChatPanel({
                         variants={statusReveal}
                         transition={statusTransition}
                       >
-                        <div className="inline-flex items-center gap-2 rounded-[1.1rem] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                        <div className="inline-flex items-center gap-2 rounded-[1.1rem] border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
                           <Loader2 className="size-4 animate-spin text-blue-600" />
                           <span>Synthesizing response...</span>
                         </div>
@@ -627,7 +627,7 @@ export function ChatPanel({
             </div>
 
             <PromptInput
-              className="rounded-[1.4rem] border border-slate-200 bg-white p-2 shadow-sm"
+              className="rounded-[1.4rem] border border-border bg-card p-2 shadow-sm"
               onSubmit={async (message) => {
                 if (!message.text.trim() || !canSubmit) return;
 
@@ -696,7 +696,7 @@ export function ChatPanel({
                 <motion.p
                   key={`chat-error-${error?.message ?? statusMessage}`}
                   layout
-                  className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                  className="rounded-xl tone-danger px-3 py-2 text-sm"
                   initial="initial"
                   animate="animate"
                   exit="exit"

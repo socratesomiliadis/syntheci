@@ -30,32 +30,32 @@ export default async function DraftsPage() {
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="rounded-[1.75rem] border-slate-200/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(239,246,255,0.94))] shadow-sm">
+        <Card className="rounded-[1.75rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(239,246,255,0.94))] shadow-sm">
           <CardHeader>
-            <CardTitle className="text-3xl tracking-tight text-slate-950">Approve with confidence before anything sends</CardTitle>
+            <CardTitle className="text-3xl tracking-tight text-foreground">Approve with confidence before anything sends</CardTitle>
           </CardHeader>
-          <CardContent className="max-w-2xl text-sm leading-6 text-slate-600">
+          <CardContent className="max-w-2xl text-sm leading-6 text-muted-foreground">
             Generated replies land here first so the human review step stays obvious and fast.
           </CardContent>
         </Card>
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Awaiting approval</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Awaiting approval</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">
+              <p className="text-4xl font-semibold tracking-tight text-foreground">
                 {Number(pendingCount[0]?.count ?? 0)}
               </p>
             </CardContent>
           </Card>
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Approved and ready</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Approved and ready</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">
+              <p className="text-4xl font-semibold tracking-tight text-foreground">
                 {Number(approvedCount[0]?.count ?? 0)}
               </p>
             </CardContent>

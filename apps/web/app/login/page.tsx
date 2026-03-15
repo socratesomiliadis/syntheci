@@ -15,7 +15,7 @@ export default async function LoginPage() {
   if (session?.user) {
     return (
       <main className="mx-auto flex min-h-svh w-full max-w-3xl items-center justify-center px-6 py-12">
-        <Card className="w-full border-blue-100 shadow-lg shadow-blue-100/60">
+        <Card className="w-full border-primary/15 shadow-lg shadow-primary/10">
           <CardHeader>
             <CardTitle>Already signed in</CardTitle>
             <CardDescription>
@@ -37,21 +37,33 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-svh overflow-hidden bg-gradient-to-br from-blue-50 via-white to-sky-50">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.18),transparent_38%),radial-gradient(circle_at_90%_10%,rgba(14,165,233,0.16),transparent_40%)]" />
+    <main
+      className="relative min-h-svh overflow-hidden"
+      style={{
+        backgroundImage:
+          "linear-gradient(135deg, color-mix(in oklab, var(--background), var(--info) 8%), var(--background) 48%, color-mix(in oklab, var(--background), var(--warning) 10%))"
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 10% 20%, color-mix(in oklab, var(--info), transparent 82%) 0%, transparent 38%), radial-gradient(circle at 90% 10%, color-mix(in oklab, var(--warning), transparent 84%) 0%, transparent 40%)"
+        }}
+      />
       <section className="relative mx-auto flex min-h-svh w-full max-w-5xl items-center justify-center px-6 py-12">
-        <Card className="w-full max-w-xl border-blue-100 bg-white/95 shadow-xl shadow-blue-200/50 backdrop-blur">
+        <Card className="w-full max-w-xl border-primary/15 bg-card/95 shadow-xl shadow-primary/20 backdrop-blur">
           <CardHeader className="space-y-4">
             <Badge
               variant="secondary"
-              className="w-fit border border-blue-200 bg-blue-50 text-blue-700"
+              className="w-fit tone-info"
             >
               <Sparkles className="mr-1 size-3.5" />
               AI Workspace
             </Badge>
             <div className="space-y-2">
-              <CardTitle className="text-3xl tracking-tight text-slate-900">Syntheci</CardTitle>
-              <CardDescription className="text-base text-slate-600">
+              <CardTitle className="text-3xl tracking-tight text-foreground">Syntheci</CardTitle>
+              <CardDescription className="text-base text-muted-foreground">
                 A unified workspace for priority inbox triage, grounded answers with citations,
                 meeting proposals, and approval-driven drafting.
               </CardDescription>
@@ -59,7 +71,7 @@ export default async function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <GoogleSignInButton />
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               By continuing, you authorize the Google-based workspace flows used by the app.
             </p>
           </CardContent>

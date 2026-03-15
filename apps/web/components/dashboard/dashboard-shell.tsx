@@ -122,22 +122,22 @@ export function DashboardShell({
       </Sidebar>
 
       <SidebarInset className="overflow-hidden border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(244,247,252,0.98))]">
-        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/82 px-4 py-4 backdrop-blur-xl md:px-6">
+        <header className="sticky top-0 z-20 border-b border-border/80 bg-card/82 px-4 py-4 backdrop-blur-xl md:px-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <SidebarTrigger className="mt-1" />
               <div className="space-y-1">
-                {/* <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                {/* <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                   {pageMeta.eyebrow}
                 </p> */}
                 <div className="flex flex-col">
                   <TextMorph
                     as="h1"
-                    className="text-xl font-semibold tracking-tight text-slate-950"
+                    className="text-xl font-semibold tracking-tight text-foreground"
                   >
                     {pageMeta.title}
                   </TextMorph>
-                  <TextMorph as="p" className="text-sm text-slate-600">
+                  <TextMorph as="p" className="text-sm text-muted-foreground">
                     {pageMeta.description}
                   </TextMorph>
                 </div>
@@ -147,12 +147,12 @@ export function DashboardShell({
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className="border-slate-300 bg-white/70 text-slate-600"
+                className="border-border bg-card/70 text-muted-foreground"
               >
                 <Sparkles className="mr-1 size-3.5" />
                 AI workflow hub
               </Badge>
-              <Badge className="border border-amber-200 bg-amber-50 text-amber-800">
+              <Badge className="tone-warning">
                 {openThreadCount} open threads
               </Badge>
             </div>

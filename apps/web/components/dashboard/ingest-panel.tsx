@@ -129,7 +129,7 @@ export function IngestPanel() {
       variants={panelReveal}
       transition={panelTransition}
     >
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg">Ingestion</CardTitle>
           <CardDescription>
@@ -143,7 +143,7 @@ export function IngestPanel() {
             animate="animate"
             variants={statusReveal}
             transition={withStagger(0, 0.05)}
-            className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
+            className="space-y-2 rounded-lg border border-border bg-muted/60 p-4"
           >
             <Label htmlFor="upload-input">Upload document (PDF/TXT/MD)</Label>
             <Input
@@ -156,7 +156,7 @@ export function IngestPanel() {
               }}
               disabled={isBusy}
             />
-            <p className="text-xs text-slate-500">Files are stored, extracted, and queued for embeddings.</p>
+            <p className="text-xs text-muted-foreground">Files are stored, extracted, and queued for embeddings.</p>
           </motion.div>
 
           <motion.div
@@ -164,7 +164,7 @@ export function IngestPanel() {
             animate="animate"
             variants={statusReveal}
             transition={withStagger(1, 0.05)}
-            className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
+            className="grid gap-3 rounded-lg border border-border bg-muted/60 p-4"
           >
             <Label htmlFor="note-title">Note title</Label>
             <Input
@@ -193,7 +193,7 @@ export function IngestPanel() {
             animate="animate"
             variants={statusReveal}
             transition={withStagger(2, 0.05)}
-            className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
+            className="grid gap-3 rounded-lg border border-border bg-muted/60 p-4"
           >
             <Label htmlFor="link-url">Import link</Label>
             <Input
@@ -216,8 +216,8 @@ export function IngestPanel() {
                 layout
                 className={
                   statusTone === "error"
-                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
+                    : "rounded-lg tone-success px-3 py-2 text-sm"
                 }
                 initial="initial"
                 animate="animate"
@@ -234,14 +234,14 @@ export function IngestPanel() {
             {isBusy ? (
               <motion.div
                 key="ingest-busy-overlay"
-                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-[2px]"
+                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-card/60 backdrop-blur-[2px]"
                 initial="initial"
                 animate="animate"
                 exit="exit"
                 variants={overlayReveal}
                 transition={overlayTransition}
               >
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm">
                   <Loader2 className="size-3.5 animate-spin text-blue-600" />
                   Processing ingestion...
                 </span>

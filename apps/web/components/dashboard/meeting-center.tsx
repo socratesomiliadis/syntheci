@@ -113,18 +113,18 @@ function buildItemsByDay(items: MeetingCalendarItem[]) {
 
 function getCalendarItemTone(item: MeetingCalendarItem) {
   if (item.source === "google") {
-    return "border-blue-200 bg-blue-50 text-blue-800";
+    return "tone-info";
   }
 
   if (item.status === "approved") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    return "tone-success";
   }
 
   if (item.status === "created") {
-    return "border-slate-200 bg-slate-100 text-slate-800";
+    return "border-border bg-accent text-foreground";
   }
 
-  return "border-amber-200 bg-amber-50 text-amber-900";
+  return "tone-warning";
 }
 
 function formatCalendarItemTime(item: MeetingCalendarItem) {
@@ -146,14 +146,14 @@ function formatCalendarItemTime(item: MeetingCalendarItem) {
 
 function getProposalBadgeTone(status: MeetingProposalStatus) {
   if (status === "approved") {
-    return "border border-emerald-200 bg-emerald-50 text-emerald-800";
+    return "tone-success";
   }
 
   if (status === "created") {
-    return "border border-slate-200 bg-slate-100 text-slate-800";
+    return "border border-border bg-accent text-foreground";
   }
 
-  return "border border-amber-200 bg-amber-50 text-amber-900";
+  return "tone-warning";
 }
 
 function createInitialSelectedDate(monthKey: string) {
@@ -360,25 +360,25 @@ export function MeetingCenter({
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
       <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-        <Card className="overflow-hidden border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-sm">
-          <CardHeader className="gap-5 border-b border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(191,219,254,0.26),transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0.96))]">
+        <Card className="overflow-hidden border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-sm">
+          <CardHeader className="gap-5 border-b border-border/80 bg-[radial-gradient(circle_at_top_left,rgba(191,219,254,0.26),transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0.96))]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+                  <Badge variant="secondary" className="tone-info">
                     Live calendar
                   </Badge>
-                  <Badge variant="outline" className="border-slate-300 bg-white/80 text-slate-700">
+                  <Badge variant="outline" className="border-border bg-card/80 text-foreground">
                     {calendarFeed.connectedAccountCount > 0
                       ? `${calendarFeed.connectedAccountCount} connected calendar${calendarFeed.connectedAccountCount === 1 ? "" : "s"}`
                       : "No connected calendar"}
                   </Badge>
                 </div>
                 <div>
-                  <CardTitle className="text-2xl tracking-tight text-slate-950 md:text-[2rem]">
+                  <CardTitle className="text-2xl tracking-tight text-foreground md:text-[2rem]">
                     {monthLabel}
                   </CardTitle>
-                  <CardDescription className="mt-2 max-w-2xl text-sm text-slate-600">
+                  <CardDescription className="mt-2 max-w-2xl text-sm text-muted-foreground">
                     A shared month view for imported Google Calendar events and Meeting Center proposals.
                   </CardDescription>
                 </div>
@@ -422,14 +422,14 @@ export function MeetingCenter({
                 {calendarFeed.accountLabels.map((label) => (
                   <span
                     key={label}
-                    className="rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs text-slate-600"
+                    className="rounded-full border border-border bg-card/90 px-3 py-1 text-xs text-muted-foreground"
                   >
                     {label}
                   </span>
                 ))}
               </div>
             ) : (
-              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white/80 px-4 py-3 text-sm text-slate-600">
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-border bg-card/80 px-4 py-3 text-sm text-muted-foreground">
                 <span>Connect Google Calendar to pull in the user&apos;s real events.</span>
                 <a
                   href="/api/connect/google/start"
@@ -447,7 +447,7 @@ export function MeetingCenter({
               {calendarStatus ? (
                 <motion.p
                   key={`calendar-status-${calendarStatus}`}
-                  className="mx-6 mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                  className="mx-6 mt-6 rounded-xl tone-warning px-4 py-3 text-sm"
                   initial="initial"
                   animate="animate"
                   exit="exit"
@@ -459,11 +459,11 @@ export function MeetingCenter({
               ) : null}
             </AnimatePresence>
 
-            <div className="grid grid-cols-7 border-t border-slate-200/80 bg-slate-50/70">
+            <div className="grid grid-cols-7 border-t border-border/80 bg-muted/70">
               {WEEKDAY_LABELS.map((weekday) => (
                 <div
                   key={weekday}
-                  className="border-b border-r border-slate-200/80 px-3 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 last:border-r-0"
+                  className="border-b border-r border-border/80 px-3 py-3 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground last:border-r-0"
                 >
                   {weekday}
                 </div>
@@ -481,11 +481,11 @@ export function MeetingCenter({
                     type="button"
                     onClick={() => setSelectedDateKey(dayKey)}
                     className={cn(
-                      "relative min-h-36 border-r border-b border-slate-200/80 px-3 py-3 text-left transition-colors last:border-r-0 sm:min-h-40",
-                      isCurrentMonth ? "bg-white" : "bg-slate-50/80",
-                      isSelected && "bg-blue-50/70",
-                      !isSelected && isCurrentMonth && "hover:bg-slate-50",
-                      !isSelected && !isCurrentMonth && "hover:bg-slate-100/80"
+                      "relative min-h-36 border-r border-b border-border/80 px-3 py-3 text-left transition-colors last:border-r-0 sm:min-h-40",
+                      isCurrentMonth ? "bg-card" : "bg-muted/80",
+                      isSelected && "bg-primary/10",
+                      !isSelected && isCurrentMonth && "hover:bg-muted",
+                      !isSelected && !isCurrentMonth && "hover:bg-accent/80"
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -493,17 +493,17 @@ export function MeetingCenter({
                         className={cn(
                           "inline-flex size-8 items-center justify-center rounded-full text-sm font-semibold",
                           isToday
-                            ? "bg-slate-950 text-white"
+                            ? "bg-foreground text-background"
                             : isSelected
-                              ? "bg-blue-100 text-blue-800"
-                              : "text-slate-700",
-                          !isCurrentMonth && "text-slate-400"
+                              ? "bg-primary/15 text-primary"
+                              : "text-foreground",
+                          !isCurrentMonth && "text-muted-foreground"
                         )}
                       >
                         {day.getDate()}
                       </span>
                       {dayItems.length > 0 ? (
-                        <span className="text-[11px] font-medium text-slate-400">{dayItems.length}</span>
+                        <span className="text-[11px] font-medium text-muted-foreground">{dayItems.length}</span>
                       ) : null}
                     </div>
 
@@ -521,7 +521,7 @@ export function MeetingCenter({
                         </div>
                       ))}
                       {dayItems.length > 3 ? (
-                        <p className="px-1 text-[11px] font-medium text-slate-500">
+                        <p className="px-1 text-[11px] font-medium text-muted-foreground">
                           +{dayItems.length - 3} more
                         </p>
                       ) : null}
@@ -535,14 +535,14 @@ export function MeetingCenter({
               {isCalendarLoading ? (
                 <motion.div
                   key={`calendar-loading-${monthKey}`}
-                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[2px]"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/70 backdrop-blur-[2px]"
                   initial="initial"
                   animate="animate"
                   exit="exit"
                   variants={overlayReveal}
                   transition={overlayTransition}
                 >
-                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm">
                     <Loader2 className="size-3.5 animate-spin text-blue-600" />
                     Loading month view...
                   </span>
@@ -555,11 +555,11 @@ export function MeetingCenter({
 
       <div className="space-y-6">
         <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-          <Card className="border-slate-200/80 shadow-sm">
+          <Card className="border-border/80 shadow-sm">
             <CardHeader className="space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-lg text-slate-950">
+                  <CardTitle className="text-lg text-foreground">
                     {selectedDay.toLocaleDateString([], {
                       weekday: "long",
                       month: "long",
@@ -568,21 +568,21 @@ export function MeetingCenter({
                   </CardTitle>
                   <CardDescription>Agenda pulled from connected calendars and Meeting Center.</CardDescription>
                 </div>
-                <Badge variant="outline" className="border-slate-300 bg-white text-slate-700">
+                <Badge variant="outline" className="border-border bg-card text-foreground">
                   {visibleSelectedDayItems.length} item{visibleSelectedDayItems.length === 1 ? "" : "s"}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {visibleSelectedDayItems.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+                <p className="rounded-xl border border-dashed border-border bg-muted px-4 py-6 text-sm text-muted-foreground">
                   No events on this day yet.
                 </p>
               ) : (
                 visibleSelectedDayItems.map((item) => (
                   <article
                     key={`agenda-${selectedDateKey}-${item.id}`}
-                    className="rounded-[1.1rem] border border-slate-200/80 bg-white px-4 py-4 shadow-[0_10px_26px_rgba(15,23,42,0.05)]"
+                    className="rounded-[1.1rem] border border-border/80 bg-card px-4 py-4 shadow-[0_10px_26px_rgba(15,23,42,0.05)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-2">
@@ -595,11 +595,11 @@ export function MeetingCenter({
                           >
                             {item.sourceLabel}
                           </span>
-                          <span className="text-xs text-slate-500">{formatCalendarItemTime(item)}</span>
+                          <span className="text-xs text-muted-foreground">{formatCalendarItemTime(item)}</span>
                         </div>
-                        <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
                         {item.attendees.length > 0 ? (
-                          <p className="text-xs text-slate-600">
+                          <p className="text-xs text-muted-foreground">
                             Attendees: {item.attendees.join(", ")}
                           </p>
                         ) : null}
@@ -624,11 +624,11 @@ export function MeetingCenter({
         </motion.section>
 
         <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-border shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-lg">Proposal workflow</CardTitle>
-                <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+                <Badge variant="secondary" className="tone-info">
                   Meeting Center
                 </Badge>
               </div>
@@ -643,8 +643,8 @@ export function MeetingCenter({
                     layout
                     className={
                       statusTone === "error"
-                        ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                        : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                        ? "rounded-lg tone-danger px-3 py-2 text-sm"
+                        : "rounded-lg tone-success px-3 py-2 text-sm"
                     }
                     initial="initial"
                     animate="animate"
@@ -662,7 +662,7 @@ export function MeetingCenter({
                   <motion.p
                     key="meeting-empty"
                     layout
-                    className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500"
+                    className="rounded-lg border border-dashed border-border bg-muted px-3 py-6 text-sm text-muted-foreground"
                     initial="initial"
                     animate="animate"
                     exit="exit"
@@ -678,7 +678,7 @@ export function MeetingCenter({
                         <motion.article
                           key={proposal.id}
                           layout
-                          className="relative space-y-3 overflow-hidden rounded-[1.2rem] border border-slate-200 bg-slate-50/70 p-4"
+                          className="relative space-y-3 overflow-hidden rounded-[1.2rem] border border-border bg-muted/70 p-4"
                           initial="initial"
                           animate="animate"
                           exit="exit"
@@ -687,9 +687,9 @@ export function MeetingCenter({
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="font-medium text-slate-800">{proposal.title}</p>
+                              <p className="font-medium text-foreground">{proposal.title}</p>
                               {proposal.description ? (
-                                <p className="mt-1 text-xs text-slate-500">{proposal.description}</p>
+                                <p className="mt-1 text-xs text-muted-foreground">{proposal.description}</p>
                               ) : null}
                             </div>
                             <span
@@ -701,17 +701,17 @@ export function MeetingCenter({
                               {proposal.status}
                             </span>
                           </div>
-                          <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
+                          <p className="rounded-md bg-card px-3 py-2 text-xs text-muted-foreground">
                             {proposal.startsAt ?? "TBD"} - {proposal.endsAt ?? "TBD"} ({proposal.timezone})
                           </p>
 
                           {!isSchedulable(proposal) ? (
-                            <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                            <p className="rounded-md tone-warning px-3 py-2 text-xs">
                               Missing start/end time. Extract or confirm timing before approval or event creation.
                             </p>
                           ) : null}
 
-                          <p className="rounded-md bg-white px-3 py-2 text-xs text-slate-600">
+                          <p className="rounded-md bg-card px-3 py-2 text-xs text-muted-foreground">
                             Attendees: {proposal.attendees.join(", ") || "(none)"}
                           </p>
 
@@ -720,7 +720,7 @@ export function MeetingCenter({
                               {proposal.attendeeContacts.map((contact) => (
                                 <span
                                   key={`${proposal.id}-${contact.id}`}
-                                  className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] text-sky-800"
+                                  className="rounded-full tone-info px-2.5 py-1 text-[11px]"
                                 >
                                   {contact.name ?? contact.email}
                                   {contact.company ? ` - ${contact.company}` : ""}
@@ -733,19 +733,19 @@ export function MeetingCenter({
                             {editingProposalId === proposal.id ? (
                               <motion.div
                                 key={`${proposal.id}-editor`}
-                                className="space-y-3 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+                                className="space-y-3 rounded-xl border border-border bg-card px-3 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
                                 initial={{ opacity: 0, y: -8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -6 }}
                                 transition={{ duration: 0.18, ease: "easeOut" }}
                               >
-                                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                                   <CalendarClock className="size-3.5 text-blue-600" />
                                   Timing Editor
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                   <div className="space-y-1.5">
-                                    <Label htmlFor={`${proposal.id}-starts-at`} className="text-xs text-slate-600">
+                                    <Label htmlFor={`${proposal.id}-starts-at`} className="text-xs text-muted-foreground">
                                       Start
                                     </Label>
                                     <Input
@@ -753,11 +753,11 @@ export function MeetingCenter({
                                       type="datetime-local"
                                       value={editStartsAt}
                                       onChange={(event) => setEditStartsAt(event.target.value)}
-                                      className="h-9 border-slate-200 bg-slate-50 text-sm"
+                                      className="h-9 border-border bg-muted text-sm"
                                     />
                                   </div>
                                   <div className="space-y-1.5">
-                                    <Label htmlFor={`${proposal.id}-ends-at`} className="text-xs text-slate-600">
+                                    <Label htmlFor={`${proposal.id}-ends-at`} className="text-xs text-muted-foreground">
                                       End
                                     </Label>
                                     <Input
@@ -765,11 +765,11 @@ export function MeetingCenter({
                                       type="datetime-local"
                                       value={editEndsAt}
                                       onChange={(event) => setEditEndsAt(event.target.value)}
-                                      className="h-9 border-slate-200 bg-slate-50 text-sm"
+                                      className="h-9 border-border bg-muted text-sm"
                                     />
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-slate-500">
+                                <p className="text-[11px] text-muted-foreground">
                                   Saved using your current browser timezone. Current meeting timezone: {proposal.timezone}.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
@@ -834,14 +834,14 @@ export function MeetingCenter({
                             {busyProposalId === proposal.id ? (
                               <motion.div
                                 key={`${proposal.id}-busy`}
-                                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/65 backdrop-blur-[2px]"
+                                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/65 backdrop-blur-[2px]"
                                 initial="initial"
                                 animate="animate"
                                 exit="exit"
                                 variants={overlayReveal}
                                 transition={overlayTransition}
                               >
-                                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm">
                                   <Loader2 className="size-3.5 animate-spin text-blue-600" />
                                   Updating proposal...
                                 </span>

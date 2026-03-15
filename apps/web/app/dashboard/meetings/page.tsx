@@ -29,41 +29,41 @@ export default async function MeetingsPage() {
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="rounded-[1.75rem] border-slate-200/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.97),rgba(239,246,255,0.95))] shadow-sm">
+        <Card className="rounded-[1.75rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.97),rgba(239,246,255,0.95))] shadow-sm">
           <CardHeader>
-            <CardTitle className="text-3xl tracking-tight text-slate-950">
+            <CardTitle className="text-3xl tracking-tight text-foreground">
               See your real calendar, then turn extracted scheduling intent into confirmed events.
             </CardTitle>
           </CardHeader>
-          <CardContent className="max-w-2xl text-sm leading-6 text-slate-600">
+          <CardContent className="max-w-2xl text-sm leading-6 text-muted-foreground">
             Google Calendar events and Meeting Center proposals now share one month view so people can
             schedule with context instead of guessing around conflicts.
           </CardContent>
         </Card>
 
         <section className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Awaiting review</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Awaiting review</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">{counts.proposed}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{counts.proposed}</p>
             </CardContent>
           </Card>
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Approved to create</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Approved to create</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">{counts.approved}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{counts.approved}</p>
             </CardContent>
           </Card>
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Connected calendars</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Connected calendars</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">
+              <p className="text-4xl font-semibold tracking-tight text-foreground">
                 {calendarFeed.connectedAccountCount}
               </p>
             </CardContent>

@@ -59,11 +59,11 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
 
   return (
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg">Draft Center</CardTitle>
-            <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            <Badge variant="secondary" className="tone-info">
               Approval required
             </Badge>
           </div>
@@ -78,8 +78,8 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                 layout
                 className={
                   statusTone === "error"
-                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
+                    : "rounded-lg tone-success px-3 py-2 text-sm"
                 }
                 initial="initial"
                 animate="animate"
@@ -97,7 +97,7 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
               <motion.p
                 key="draft-empty"
                 layout
-                className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500"
+                className="rounded-lg border border-dashed border-border bg-muted px-3 py-6 text-sm text-muted-foreground"
                 initial="initial"
                 animate="animate"
                 exit="exit"
@@ -113,7 +113,7 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                     <motion.article
                       key={draft.id}
                       layout
-                      className="relative space-y-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                      className="relative space-y-3 overflow-hidden rounded-lg border border-border bg-muted/70 p-3"
                       initial="initial"
                       animate="animate"
                       exit="exit"
@@ -122,8 +122,8 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="font-medium text-slate-800">{draft.messageId}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="font-medium text-foreground">{draft.messageId}</p>
+                          <p className="text-xs text-muted-foreground">
                             Created {new Date(draft.createdAt).toLocaleString()}
                           </p>
                         </div>
@@ -132,7 +132,7 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                         </Badge>
                       </div>
 
-                      <p className="line-clamp-6 whitespace-pre-wrap rounded-md bg-white px-3 py-2 text-sm text-slate-700">
+                      <p className="line-clamp-6 whitespace-pre-wrap rounded-md bg-card px-3 py-2 text-sm text-foreground">
                         {draft.body}
                       </p>
 
@@ -158,14 +158,14 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
                         {busyDraftId === draft.id ? (
                           <motion.div
                             key={`${draft.id}-busy`}
-                            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/65 backdrop-blur-[2px]"
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/65 backdrop-blur-[2px]"
                             initial="initial"
                             animate="animate"
                             exit="exit"
                             variants={overlayReveal}
                             transition={overlayTransition}
                           >
-                            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-sm">
                               <Loader2 className="size-3.5 animate-spin text-blue-600" />
                               Updating draft...
                             </span>

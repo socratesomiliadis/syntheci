@@ -22,13 +22,13 @@ export default async function ContactsPage({
 
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
-      <Card className="rounded-[1.75rem] border-slate-200/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(238,250,248,0.96))] shadow-sm">
+      <Card className="rounded-[1.75rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(238,250,248,0.96))] shadow-sm">
         <CardHeader>
-          <CardTitle className="text-3xl tracking-tight text-slate-950">
+          <CardTitle className="text-3xl tracking-tight text-foreground">
             Contacts become durable system context, not just names in an inbox.
           </CardTitle>
         </CardHeader>
-        <CardContent className="max-w-3xl text-sm leading-6 text-slate-600">
+        <CardContent className="max-w-3xl text-sm leading-6 text-muted-foreground">
           Every profile here can start from a sender line, then grow into reusable context for retrieval,
           scheduling, and future follow-up work across the workspace.
         </CardContent>

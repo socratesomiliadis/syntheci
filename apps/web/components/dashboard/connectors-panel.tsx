@@ -65,11 +65,11 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
 
   return (
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-      <Card className="h-full border-slate-200 shadow-sm">
+      <Card className="h-full border-border shadow-sm">
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg">Connectors</CardTitle>
-            <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            <Badge variant="secondary" className="tone-info">
               Google
             </Badge>
           </div>
@@ -82,20 +82,20 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
               animate="animate"
               variants={statusReveal}
               transition={withStagger(0, 0.05)}
-              className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2"
+              className="rounded-lg border border-border bg-muted/70 px-3 py-2"
             >
-              <p className="text-xs uppercase tracking-wide text-slate-500">Connected</p>
-              <p className="text-xl font-semibold text-slate-800">{connectors.length}</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Connected</p>
+              <p className="text-xl font-semibold text-foreground">{connectors.length}</p>
             </motion.div>
             <motion.div
               initial="initial"
               animate="animate"
               variants={statusReveal}
               transition={withStagger(1, 0.05)}
-              className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2"
+              className="rounded-lg border border-border bg-muted/70 px-3 py-2"
             >
-              <p className="text-xs uppercase tracking-wide text-slate-500">Providers</p>
-              <p className="text-xl font-semibold text-slate-800">Gmail, Calendar</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Providers</p>
+              <p className="text-xl font-semibold text-foreground">Gmail, Calendar</p>
             </motion.div>
           </div>
 
@@ -124,8 +124,8 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
                 layout
                 className={
                   statusTone === "error"
-                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
+                    : "rounded-lg tone-success px-3 py-2 text-sm"
                 }
                 initial="initial"
                 animate="animate"
@@ -142,7 +142,7 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
               <motion.p
                 key="connectors-empty"
                 layout
-                className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500"
+                className="rounded-lg border border-dashed border-border bg-muted px-3 py-6 text-sm text-muted-foreground"
                 initial="initial"
                 animate="animate"
                 exit="exit"
@@ -157,7 +157,7 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
                     <motion.article
                       key={connector.id}
                       layout
-                      className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-3"
+                      className="rounded-lg border border-border bg-muted/70 px-3 py-3"
                       initial="initial"
                       animate="animate"
                       exit="exit"
@@ -165,12 +165,12 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
                       transition={withStagger(index)}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="font-medium text-slate-800">{connector.provider}</p>
-                        <span className="text-xs text-slate-500">
+                        <p className="font-medium text-foreground">{connector.provider}</p>
+                        <span className="text-xs text-muted-foreground">
                           Updated {new Date(connector.updatedAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-slate-600">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Scopes: {connector.scopes.join(", ") || "(none)"}
                       </p>
                     </motion.article>

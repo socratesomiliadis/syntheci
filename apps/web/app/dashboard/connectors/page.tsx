@@ -17,10 +17,10 @@ export default async function ConnectorsPage() {
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card className="rounded-[1.75rem] border-slate-200/80 bg-white/90 shadow-sm">
+        <Card className="rounded-[1.75rem] border-border/80 bg-card/90 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-3xl tracking-tight text-slate-950">Connect the workspace to live systems</CardTitle>
-            <CardDescription className="max-w-2xl text-base text-slate-600">
+            <CardTitle className="text-3xl tracking-tight text-foreground">Connect the workspace to live systems</CardTitle>
+            <CardDescription className="max-w-2xl text-base text-muted-foreground">
               Keep Gmail and Calendar synchronized so triage, drafting, meetings, and retrieval all work from current context.
             </CardDescription>
           </CardHeader>
@@ -35,20 +35,20 @@ export default async function ConnectorsPage() {
         </Card>
 
         <section className="grid gap-4 sm:grid-cols-2">
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Connected accounts</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Connected accounts</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-slate-950">{connectors.length}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{connectors.length}</p>
             </CardContent>
           </Card>
-          <Card className="rounded-[1.4rem] border-slate-200/80 bg-white/90 shadow-sm">
+          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-slate-700">Latest sync activity</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">Latest sync activity</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm font-medium text-slate-900">{latestSync}</p>
+              <p className="text-sm font-medium text-foreground">{latestSync}</p>
             </CardContent>
           </Card>
         </section>

@@ -115,11 +115,11 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
       variants={panelReveal}
       transition={panelTransition}
     >
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-border shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg">Priority Inbox</CardTitle>
-            <Badge variant="secondary" className="border border-blue-200 bg-blue-50 text-blue-700">
+            <Badge variant="secondary" className="tone-info">
               Triage + actioning
             </Badge>
           </div>
@@ -133,8 +133,8 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                 layout
                 className={
                   statusTone === "error"
-                    ? "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                    : "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
+                    : "rounded-lg tone-success px-3 py-2 text-sm"
                 }
                 initial="initial"
                 animate="animate"
@@ -152,7 +152,7 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
               <motion.p
                 key="inbox-empty"
                 layout
-                className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-sm text-slate-500"
+                className="rounded-lg border border-dashed border-border bg-muted px-3 py-6 text-sm text-muted-foreground"
                 initial="initial"
                 animate="animate"
                 exit="exit"
@@ -168,7 +168,7 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                     <motion.article
                       key={item.id}
                       layout
-                      className="relative space-y-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70 p-3"
+                      className="relative space-y-3 overflow-hidden rounded-lg border border-border bg-muted/70 p-3"
                       initial="initial"
                       animate="animate"
                       exit="exit"
@@ -177,9 +177,9 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-medium text-slate-800">{item.subject ?? "(no subject)"}</p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {item.senderName ?? item.senderEmail ?? "Unknown sender"} •{" "}
+                          <p className="font-medium text-foreground">{item.subject ?? "(no subject)"}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {item.senderName ?? item.senderEmail ?? "Unknown sender"} Ã¢â‚¬Â¢{" "}
                             {new Date(item.receivedAt).toLocaleString()}
                           </p>
                         </div>
@@ -190,10 +190,10 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                           >
                             {(item.label ?? "untriaged").replace("_", " ")}
                           </Badge>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground">
                             score {item.score.toFixed(1)}
                             {typeof item.confidence === "number"
-                              ? ` • ${(item.confidence * 100).toFixed(0)}% confidence`
+                              ? ` Ã¢â‚¬Â¢ ${(item.confidence * 100).toFixed(0)}% confidence`
                               : ""}
                           </span>
                         </div>
@@ -229,14 +229,14 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
                         {busyId === item.id ? (
                           <motion.div
                             key={`${item.id}-busy`}
-                            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-[2px]"
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-card/70 backdrop-blur-[2px]"
                             initial="initial"
                             animate="animate"
                             exit="exit"
                             variants={overlayReveal}
                             transition={overlayTransition}
                           >
-                            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
                               <Loader2 className="size-3.5 animate-spin text-blue-600" />
                               Running action...
                             </span>

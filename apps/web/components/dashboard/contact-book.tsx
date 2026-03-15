@@ -233,17 +233,17 @@ export function ContactBook({
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
       <div className="space-y-6">
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-[1.8rem] border-slate-200/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(237,246,255,0.94))] shadow-sm">
+          <Card className="rounded-[1.8rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(237,246,255,0.94))] shadow-sm">
             <CardHeader className="space-y-4">
-              <Badge className="w-fit border border-sky-200 bg-sky-50 text-sky-800">
+              <Badge className="w-fit tone-info">
                 <BookUser className="mr-1 size-3.5" />
                 Shared people graph
               </Badge>
               <div className="space-y-3">
-                <CardTitle className="text-3xl tracking-tight text-slate-950">
+                <CardTitle className="text-3xl tracking-tight text-foreground">
                   Build a living contact book from real conversations, then enrich it when context matters.
                 </CardTitle>
-                <CardDescription className="max-w-2xl text-sm leading-6 text-slate-600">
+                <CardDescription className="max-w-2xl text-sm leading-6 text-muted-foreground">
                   New Gmail senders land here automatically, and every update feeds the workspace&apos;s
                   searchable knowledge so meetings, retrieval, and follow-up work stay people-aware.
                 </CardDescription>
@@ -252,39 +252,39 @@ export function ContactBook({
           </Card>
 
           <section className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <Card className="rounded-[1.35rem] border-slate-200/80 bg-white/92 shadow-sm">
+            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-slate-700">Known contacts</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground">Known contacts</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-slate-950">{contacts.length}</p>
+                <p className="text-4xl font-semibold tracking-tight text-foreground">{contacts.length}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-[1.35rem] border-slate-200/80 bg-white/92 shadow-sm">
+            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-slate-700">Auto-captured</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground">Auto-captured</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-slate-950">{autoCapturedCount}</p>
+                <p className="text-4xl font-semibold tracking-tight text-foreground">{autoCapturedCount}</p>
               </CardContent>
             </Card>
-            <Card className="rounded-[1.35rem] border-slate-200/80 bg-white/92 shadow-sm">
+            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-slate-700">Enriched profiles</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground">Enriched profiles</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-slate-950">{enrichedCount}</p>
+                <p className="text-4xl font-semibold tracking-tight text-foreground">{enrichedCount}</p>
               </CardContent>
             </Card>
           </section>
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <Card className="rounded-[1.7rem] border-slate-200/80 bg-white/92 shadow-sm">
-            <CardHeader className="gap-4 border-b border-slate-200/80 pb-4">
+          <Card className="rounded-[1.7rem] border-border/80 bg-card/92 shadow-sm">
+            <CardHeader className="gap-4 border-b border-border/80 pb-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-xl text-slate-950">Directory</CardTitle>
+                  <CardTitle className="text-xl text-foreground">Directory</CardTitle>
                   <CardDescription>
                     Search everyone the workspace knows, whether they were added manually or discovered from mail.
                   </CardDescription>
@@ -296,12 +296,12 @@ export function ContactBook({
               </div>
 
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by name, email, company, role, or notes"
-                  className="h-11 rounded-xl border-slate-200 bg-slate-50 pl-10"
+                  className="h-11 rounded-xl border-border bg-muted pl-10"
                 />
               </div>
             </CardHeader>
@@ -312,18 +312,18 @@ export function ContactBook({
                   <motion.div
                     key="contacts-empty"
                     layout
-                    className="rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/80 px-5 py-8 text-center"
+                    className="rounded-[1.2rem] border border-dashed border-border bg-muted/80 px-5 py-8 text-center"
                     initial="initial"
                     animate="animate"
                     exit="exit"
                     variants={statusReveal}
                     transition={statusTransition}
                   >
-                    <UserRoundSearch className="mx-auto size-9 text-slate-300" />
-                    <p className="mt-3 text-sm font-medium text-slate-700">
+                    <UserRoundSearch className="mx-auto size-9 text-muted-foreground" />
+                    <p className="mt-3 text-sm font-medium text-foreground">
                       {contacts.length === 0 ? "No contacts yet." : "No contacts match this search."}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       Gmail senders appear here automatically once they sync in.
                     </p>
                   </motion.div>
@@ -339,8 +339,8 @@ export function ContactBook({
                         className={cn(
                           "w-full rounded-[1.2rem] border px-4 py-4 text-left transition-colors",
                           isActive
-                            ? "border-sky-200 bg-sky-50/80 shadow-sm"
-                            : "border-slate-200/80 bg-slate-50/65 hover:bg-slate-100/80"
+                            ? "border-info/25 bg-info/10 shadow-sm"
+                            : "border-border/80 bg-muted/65 hover:bg-accent/80"
                         )}
                         initial="initial"
                         animate="animate"
@@ -350,8 +350,8 @@ export function ContactBook({
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-slate-900">{contactLabel(contact)}</p>
-                            <p className="mt-1 truncate text-sm text-slate-500">
+                            <p className="truncate font-medium text-foreground">{contactLabel(contact)}</p>
+                            <p className="mt-1 truncate text-sm text-muted-foreground">
                               {contact.email ?? "No email yet"}
                             </p>
                           </div>
@@ -360,19 +360,19 @@ export function ContactBook({
                           </Badge>
                         </div>
 
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                           {contact.company ? (
-                            <span className="rounded-full bg-white px-2.5 py-1">{contact.company}</span>
+                            <span className="rounded-full bg-card px-2.5 py-1">{contact.company}</span>
                           ) : null}
                           {contact.role ? (
-                            <span className="rounded-full bg-white px-2.5 py-1">{contact.role}</span>
+                            <span className="rounded-full bg-card px-2.5 py-1">{contact.role}</span>
                           ) : null}
-                          <span className="rounded-full bg-white px-2.5 py-1">
+                          <span className="rounded-full bg-card px-2.5 py-1">
                             {contact.messageCount} messages
                           </span>
                         </div>
 
-                        <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-slate-400">
+                        <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                           Last touch {formatRelativeDate(contact.lastMessageAt)}
                         </p>
                       </motion.button>
@@ -383,11 +383,11 @@ export function ContactBook({
             </CardContent>
           </Card>
 
-          <Card className="rounded-[1.7rem] border-slate-200/80 bg-white/92 shadow-sm">
-            <CardHeader className="border-b border-slate-200/80 pb-4">
+          <Card className="rounded-[1.7rem] border-border/80 bg-card/92 shadow-sm">
+            <CardHeader className="border-b border-border/80 pb-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <CardTitle className="text-xl text-slate-950">
+                  <CardTitle className="text-xl text-foreground">
                     {mode === "create" ? "Add contact" : contactLabel(selectedContact ?? {
                       id: "",
                       workspaceId: "",
@@ -413,7 +413,7 @@ export function ContactBook({
                   </CardDescription>
                 </div>
                 {selectedContact ? (
-                  <Badge variant="secondary" className="border border-slate-200 bg-slate-100 text-slate-700">
+                  <Badge variant="secondary" className="border border-border bg-accent text-foreground">
                     {selectedContact.messageCount} linked messages
                   </Badge>
                 ) : null}
@@ -428,8 +428,8 @@ export function ContactBook({
                     layout
                     className={
                       statusTone === "error"
-                        ? "rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                        : "rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                        ? "rounded-xl tone-danger px-4 py-3 text-sm"
+                        : "rounded-xl tone-success px-4 py-3 text-sm"
                     }
                     initial="initial"
                     animate="animate"
@@ -450,7 +450,7 @@ export function ContactBook({
                     value={draft.name}
                     onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
                     placeholder="Alex Morgan"
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50"
+                    className="h-11 rounded-xl border-border bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
@@ -461,7 +461,7 @@ export function ContactBook({
                     value={draft.email}
                     onChange={(event) => setDraft((current) => ({ ...current, email: event.target.value }))}
                     placeholder="alex@company.com"
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50"
+                    className="h-11 rounded-xl border-border bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
@@ -471,7 +471,7 @@ export function ContactBook({
                     value={draft.phoneNumber}
                     onChange={(event) => setDraft((current) => ({ ...current, phoneNumber: event.target.value }))}
                     placeholder="+30 210 555 0000"
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50"
+                    className="h-11 rounded-xl border-border bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
@@ -481,7 +481,7 @@ export function ContactBook({
                     value={draft.company}
                     onChange={(event) => setDraft((current) => ({ ...current, company: event.target.value }))}
                     placeholder="Acme Labs"
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50"
+                    className="h-11 rounded-xl border-border bg-muted"
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
@@ -491,7 +491,7 @@ export function ContactBook({
                     value={draft.role}
                     onChange={(event) => setDraft((current) => ({ ...current, role: event.target.value }))}
                     placeholder="Chief of Staff"
-                    className="h-11 rounded-xl border-slate-200 bg-slate-50"
+                    className="h-11 rounded-xl border-border bg-muted"
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
@@ -501,31 +501,31 @@ export function ContactBook({
                     value={draft.notes}
                     onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
                     placeholder="Context, preferences, relationship notes, or meeting prep cues"
-                    className="min-h-32 rounded-2xl border-slate-200 bg-slate-50"
+                    className="min-h-32 rounded-2xl border-border bg-muted"
                   />
                 </div>
               </div>
 
               {selectedContact ? (
-                <div className="grid gap-3 rounded-[1.3rem] border border-slate-200/80 bg-slate-50/80 p-4 text-sm text-slate-600 sm:grid-cols-2">
+                <div className="grid gap-3 rounded-[1.3rem] border border-border/80 bg-muted/80 p-4 text-sm text-muted-foreground sm:grid-cols-2">
                   <div className="inline-flex items-start gap-2">
                     <Mail className="mt-0.5 size-4 text-sky-700" />
                     <div>
-                      <p className="font-medium text-slate-800">Email trail</p>
+                      <p className="font-medium text-foreground">Email trail</p>
                       <p>{selectedContact.email ?? "No email yet"}</p>
                     </div>
                   </div>
                   <div className="inline-flex items-start gap-2">
                     <Phone className="mt-0.5 size-4 text-emerald-700" />
                     <div>
-                      <p className="font-medium text-slate-800">Phone</p>
+                      <p className="font-medium text-foreground">Phone</p>
                       <p>{selectedContact.phoneNumber ?? "Not captured"}</p>
                     </div>
                   </div>
                   <div className="inline-flex items-start gap-2">
                     <Building2 className="mt-0.5 size-4 text-amber-700" />
                     <div>
-                      <p className="font-medium text-slate-800">Company and role</p>
+                      <p className="font-medium text-foreground">Company and role</p>
                       <p>
                         {selectedContact.company || selectedContact.role
                           ? [selectedContact.company, selectedContact.role].filter(Boolean).join(" - ")
@@ -536,7 +536,7 @@ export function ContactBook({
                   <div className="inline-flex items-start gap-2">
                     <StickyNote className="mt-0.5 size-4 text-fuchsia-700" />
                     <div>
-                      <p className="font-medium text-slate-800">Touchpoints</p>
+                      <p className="font-medium text-foreground">Touchpoints</p>
                       <p>{selectedContact.messageCount} linked inbox messages</p>
                     </div>
                   </div>
