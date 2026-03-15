@@ -49,14 +49,6 @@ describe("classifyMessageTriage", () => {
   });
 
   it("accepts scheduling classifications", async () => {
-    mocks.generateObjectMock.mockResolvedValue({
-      object: {
-        label: "scheduling",
-        confidence: 0.64,
-        rationale: "The message is mainly about moving a meeting."
-      }
-    });
-
     await expect(
       classifyMessageTriage({
         subject: "Move tomorrow's sync",
@@ -65,9 +57,57 @@ describe("classifyMessageTriage", () => {
       })
     ).resolves.toEqual({
       label: "scheduling",
-      confidence: 0.64,
-      rationale: "The message is mainly about moving a meeting."
+      confidence: 0.93,
+      rationale: "The message is primarily about confirming or changing a meeting time."
     });
+  });
+
+  it("uses a heuristic follow-up classification for low-pressure nudges", async () => {
+    await expect(
+      classifyMessageTriage({
+        subject: "Following up on next week's board preview",
+        body: "Checking in on the board preview deck. It would help to see the top customer wins.",
+        sender: "omar@example.com"
+      })
+    ).resolves.toEqual({
+      label: "follow_up",
+      confidence: 0.82,
+      rationale: "The message adds context or makes a low-pressure request that can be handled later."
+    });
+
+    expect(mocks.generateObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("treats concrete approval asks as needs_reply instead of urgent", async () => {
+    await expect(
+      classifyMessageTriage({
+        subject: "Can you approve the updated partner proposal?",
+        body: "If this looks good, reply with approval so I can send the final draft tomorrow morning.",
+        sender: "lena@example.com"
+      })
+    ).resolves.toEqual({
+      label: "needs_reply",
+      confidence: 0.89,
+      rationale: "The sender is waiting on a concrete answer, approval, or artifact."
+    });
+
+    expect(mocks.generateObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("does not treat soft scheduling language as scheduling when it is still a follow-up", async () => {
+    await expect(
+      classifyMessageTriage({
+        subject: "Can you join a customer reference call next week?",
+        body: "If you are open to it, I can line up a 30-minute reference call early next week.",
+        sender: "james@example.com"
+      })
+    ).resolves.toEqual({
+      label: "follow_up",
+      confidence: 0.82,
+      rationale: "The message adds context or makes a low-pressure request that can be handled later."
+    });
+
+    expect(mocks.generateObjectMock).not.toHaveBeenCalled();
   });
 
   it("rejects invalid model outputs", async () => {

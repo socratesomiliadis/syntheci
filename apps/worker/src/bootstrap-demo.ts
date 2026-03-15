@@ -395,13 +395,39 @@ async function createDemoSource(input: {
   return source;
 }
 
+function buildIndexableDocumentText(input: { title: string; text: string }) {
+  return [`Title: ${input.title}`, input.text].join("\n\n");
+}
+
+function buildIndexableMessageText(input: {
+  subject: string | null;
+  senderName: string | null;
+  senderEmail: string | null;
+  text: string;
+}) {
+  const sections = [
+    input.subject ? `Subject: ${input.subject}` : null,
+    input.senderName ? `Sender: ${input.senderName}` : null,
+    input.senderEmail ? `Sender email: ${input.senderEmail}` : null,
+    input.text
+  ].filter((section): section is string => Boolean(section && section.trim()));
+
+  return sections.join("\n\n");
+}
+
 async function indexDocumentText(input: {
   workspaceId: string;
   sourceId: string;
   documentId: string;
+  title: string;
   text: string;
 }) {
-  const chunks = chunkText(input.text);
+  const chunks = chunkText(
+    buildIndexableDocumentText({
+      title: input.title,
+      text: input.text
+    })
+  );
   if (chunks.length === 0) {
     return 0;
   }
@@ -426,9 +452,19 @@ async function indexMessageText(input: {
   workspaceId: string;
   sourceId: string;
   messageId: string;
+  subject: string | null;
+  senderName: string | null;
+  senderEmail: string | null;
   text: string;
 }) {
-  const chunks = chunkText(input.text);
+  const chunks = chunkText(
+    buildIndexableMessageText({
+      subject: input.subject,
+      senderName: input.senderName,
+      senderEmail: input.senderEmail,
+      text: input.text
+    })
+  );
   if (chunks.length === 0) {
     return 0;
   }
@@ -620,6 +656,9 @@ async function seedWorkspaceData(
       workspaceId: input.workspaceId,
       sourceId: gmailSource.id,
       messageId: message.id,
+      subject: fixture.subject,
+      senderName: fixture.senderName,
+      senderEmail: fixture.senderEmail,
       text: fixture.textBody
     });
 
@@ -655,6 +694,7 @@ async function seedWorkspaceData(
       workspaceId: input.workspaceId,
       sourceId: noteSource.id,
       documentId: document.id,
+      title: note.title,
       text: note.body
     });
 
@@ -688,6 +728,7 @@ async function seedWorkspaceData(
       workspaceId: input.workspaceId,
       sourceId: linkSource.id,
       documentId: document.id,
+      title: link.title,
       text: link.rawText
     });
 
@@ -726,6 +767,7 @@ async function seedWorkspaceData(
       workspaceId: input.workspaceId,
       sourceId: uploadSource.id,
       documentId: document.id,
+      title: upload.title,
       text: upload.rawText
     });
 

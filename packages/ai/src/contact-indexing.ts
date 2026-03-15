@@ -104,7 +104,7 @@ export async function syncContactKnowledgeDocument(input: {
     content: rawText,
     tokenCount: estimateTokenCount(rawText),
     embedding,
-    rankBoost: 1.2
+    rankBoost: 0.6
   });
 
   return document;

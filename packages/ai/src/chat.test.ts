@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   embedTextMock: vi.fn(),
-  generateTextMock: vi.fn(),
+  generateObjectMock: vi.fn(),
   streamTextMock: vi.fn()
 }));
 
 vi.mock("ai", () => ({
-  generateText: mocks.generateTextMock,
+  generateObject: mocks.generateObjectMock,
   streamText: mocks.streamTextMock
 }));
 
@@ -24,7 +24,7 @@ import { answerWithCitations, embedQuery, streamAnswerWithCitations } from "./ch
 describe("chat workflows", () => {
   beforeEach(() => {
     mocks.embedTextMock.mockReset();
-    mocks.generateTextMock.mockReset();
+    mocks.generateObjectMock.mockReset();
     mocks.streamTextMock.mockReset();
   });
 
@@ -37,8 +37,11 @@ describe("chat workflows", () => {
   });
 
   it("answers with bounded citations", async () => {
-    mocks.generateTextMock.mockResolvedValue({
-      text: "  Grounded answer.  "
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        answer: "  Grounded answer.  ",
+        citationNumbers: [2, 4, 2, 99]
+      }
     });
 
     const chunks = Array.from({ length: 8 }, (_, index) => ({
@@ -56,24 +59,30 @@ describe("chat workflows", () => {
     });
 
     expect(result.answer).toBe("Grounded answer.");
-    expect(result.citations).toHaveLength(6);
+    expect(result.citations).toHaveLength(2);
+    expect(result.citations[0]?.messageOrDocId).toBe("doc-2");
+    expect(result.citations[1]?.messageOrDocId).toBe("doc-4");
     expect(result.citations[0].snippet.length).toBeLessThanOrEqual(300);
-    expect(mocks.generateTextMock).toHaveBeenCalledTimes(1);
+    expect(mocks.generateObjectMock).toHaveBeenCalledTimes(1);
 
-    const call = mocks.generateTextMock.mock.calls[0][0];
+    const call = mocks.generateObjectMock.mock.calls[0][0];
     expect(call.system).toContain("Use provided evidence when it is relevant.");
     expect(call.system).toContain(
       "For source-specific questions, treat matching source records as canonical"
     );
     expect(call.system).toContain("Do not present unsupported claims as certain.");
     expect(call.system).toContain("Use inline citations like [1] when citing evidence.");
+    expect(call.system).toContain("Evidence:\n[1] (note) chunk-content-1");
     expect(call.prompt).toContain("Question: Summarize");
-    expect(call.prompt).toContain("Evidence:\n[1] (note) chunk-content-1");
+    expect(call.prompt).toContain("citationNumbers");
   });
 
   it("marks missing evidence explicitly when no chunks are retrieved", async () => {
-    mocks.generateTextMock.mockResolvedValue({
-      text: "Need more context."
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        answer: "Need more context.",
+        citationNumbers: []
+      }
     });
 
     const result = await answerWithCitations({
@@ -84,8 +93,52 @@ describe("chat workflows", () => {
     expect(result.answer).toBe("Need more context.");
     expect(result.citations).toEqual([]);
 
-    const call = mocks.generateTextMock.mock.calls[0][0];
-    expect(call.prompt).toContain("Evidence:\nNo evidence provided.");
+    const call = mocks.generateObjectMock.mock.calls[0][0];
+    expect(call.system).toContain("Evidence:\nNo evidence provided.");
+  });
+
+  it("falls back to lexical citations when the model returns none", async () => {
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        answer: "Start with the Helios renewal and the VectorOps proposal.",
+        citationNumbers: []
+      }
+    });
+
+    const result = await answerWithCitations({
+      question: "Which commercial threads need my attention first?",
+      chunks: [
+        {
+          id: "chunk-1",
+          sourceType: "gmail",
+          sourceId: "source-1",
+          messageOrDocId: "helios-renewal",
+          content: "Subject: Need commercial sign-off on the Helios renewal",
+          deepLink: null
+        },
+        {
+          id: "chunk-2",
+          sourceType: "gmail",
+          sourceId: "source-1",
+          messageOrDocId: "vectorops-proposal",
+          content: "Subject: Can you approve the updated partner proposal?",
+          deepLink: null
+        },
+        {
+          id: "chunk-3",
+          sourceType: "gmail",
+          sourceId: "source-1",
+          messageOrDocId: "monthly-report",
+          content: "Sharing the February operating report for awareness.",
+          deepLink: null
+        }
+      ]
+    });
+
+    expect(result.citations.map((citation) => citation.messageOrDocId)).toEqual([
+      "helios-renewal",
+      "vectorops-proposal"
+    ]);
   });
 
   it("streams answer and returns citation metadata", () => {

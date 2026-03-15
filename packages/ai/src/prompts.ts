@@ -8,9 +8,10 @@ Keep answers concise and directly useful.`;
 export const TRIAGE_PROMPT = `Classify one message into exactly one label.
 urgent: immediate, time-sensitive risk, outage, escalation, or blocking issue.
 needs_reply: the sender is asking for a response or decision soon.
-follow_up: the thread should be revisited later, but not urgently.
+follow_up: the thread should be revisited later, but not urgently. Use this for nudges, soft asks, product feedback, added context on an already-open thread, or low-pressure requests that can wait.
 scheduling: the message is mainly about arranging or changing a meeting or time.
 informational: no clear action is needed.
+Choose follow_up instead of needs_reply when the message is valuable but low-pressure, framed as "if helpful", "if you are open to it", "checking in", "one more thing", or similar context-setting language.
 If multiple labels fit, prefer urgent > needs_reply > follow_up > scheduling > informational.
 Set confidence to match your certainty and keep the rationale short and message-specific.`;
 

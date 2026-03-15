@@ -35,13 +35,39 @@ export function getDemoMetadata(metadata: unknown) {
   return resolveDemoMetadata(metadata);
 }
 
+function buildIndexableMessageText(input: {
+  subject: string | null;
+  senderName: string | null;
+  senderEmail: string | null;
+  text: string;
+}) {
+  const sections = [
+    input.subject ? `Subject: ${input.subject}` : null,
+    input.senderName ? `Sender: ${input.senderName}` : null,
+    input.senderEmail ? `Sender email: ${input.senderEmail}` : null,
+    input.text
+  ].filter((section): section is string => Boolean(section && section.trim()));
+
+  return sections.join("\n\n");
+}
+
 async function indexDemoMessageText(input: {
   workspaceId: string;
   sourceId: string;
   messageId: string;
+  subject: string | null;
+  senderName: string | null;
+  senderEmail: string | null;
   text: string;
 }) {
-  const chunks = chunkText(input.text);
+  const chunks = chunkText(
+    buildIndexableMessageText({
+      subject: input.subject,
+      senderName: input.senderName,
+      senderEmail: input.senderEmail,
+      text: input.text
+    })
+  );
   if (chunks.length === 0) {
     return 0;
   }
@@ -174,6 +200,9 @@ async function persistDemoFixtureMessage(input: {
     workspaceId: input.workspaceId,
     sourceId: input.sourceId,
     messageId: message.id,
+    subject: input.fixture.subject,
+    senderName: input.fixture.senderName,
+    senderEmail: input.fixture.senderEmail,
     text: input.fixture.textBody
   });
 }
