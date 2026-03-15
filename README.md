@@ -435,6 +435,15 @@ flowchart LR
 
 This is the easiest path if you want the whole stack running in containers.
 
+For this mode, the app and worker run inside Docker, so infra hosts should use
+the Compose service names:
+
+- `DATABASE_URL=postgres://syntheci:syntheci@postgres:5432/syntheci`
+- `REDIS_URL=redis://redis:6379`
+- `MINIO_ENDPOINT=http://minio:9000`
+
+That is why the checked-in `.env.example` is container-oriented by default.
+
 ```bash
 pnpm install
 cp .env.example .env
@@ -450,6 +459,23 @@ Open:
 ### Option B: local app + worker, Docker infra only
 
 This is the nicest developer loop when editing code.
+
+For this mode, Docker still runs Postgres, Redis, and MinIO, but `apps/web` and
+`apps/worker` run on your machine. That means the local Node processes must use
+`localhost`, not the Docker service names:
+
+```env
+DATABASE_URL=postgres://syntheci:syntheci@localhost:5432/syntheci
+REDIS_URL=redis://localhost:6379
+MINIO_ENDPOINT=http://localhost:9000
+MINIO_PUBLIC_URL=http://localhost:9000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+APP_BASE_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+If you copy `.env.example`, update those values before starting `dev:web` and
+`dev:worker`.
 
 ```bash
 pnpm install
@@ -511,6 +537,44 @@ That means the environment is configuring both product behavior and infrastructu
 </details>
 
 The root `.env.example` is already a good source of truth. The table below explains what each variable actually controls.
+
+### Hostname rule of thumb
+
+- If `web` and `worker` are running in Docker, use Docker hostnames like
+  `postgres`, `redis`, and `minio`.
+- If `web` and `worker` are running on your machine, use `localhost` for those
+  same services.
+
+### Common env presets
+
+#### Full Docker startup: app + worker in containers
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+APP_BASE_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+DATABASE_URL=postgres://syntheci:syntheci@postgres:5432/syntheci
+REDIS_URL=redis://redis:6379
+MINIO_ENDPOINT=http://minio:9000
+MINIO_PUBLIC_URL=http://localhost:9000
+```
+
+#### Docker infra only: app + worker running locally
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+APP_BASE_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+DATABASE_URL=postgres://syntheci:syntheci@localhost:5432/syntheci
+REDIS_URL=redis://localhost:6379
+MINIO_ENDPOINT=http://localhost:9000
+MINIO_PUBLIC_URL=http://localhost:9000
+```
+
+> [!IMPORTANT]
+> The most common local startup bug is keeping `postgres`, `redis`, or `minio`
+> in `.env` while running `pnpm dev:web` or `pnpm dev:worker` outside Docker.
+> Those hostnames only resolve from inside the Docker network.
 
 | Variable | Purpose |
 | --- | --- |
