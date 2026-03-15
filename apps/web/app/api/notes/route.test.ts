@@ -7,8 +7,12 @@ const mocks = vi.hoisted(() => ({
   upsertJobAuditMock: vi.fn(),
   enqueueJobMock: vi.fn(),
   insertMock: vi.fn(),
+  updateMock: vi.fn(),
   valuesMock: vi.fn(),
-  returningMock: vi.fn()
+  returningMock: vi.fn(),
+  setMock: vi.fn(),
+  whereMock: vi.fn(),
+  updateReturningMock: vi.fn()
 }));
 
 vi.mock("@/lib/session", () => ({
@@ -32,12 +36,17 @@ vi.mock("@/lib/queue", () => ({
   processingQueue: { name: "processing" }
 }));
 
+vi.mock("drizzle-orm", () => ({
+  eq: vi.fn(() => "eq-clause")
+}));
+
 vi.mock("@syntheci/db", () => ({
   documents: {
     id: "id"
   },
   db: {
-    insert: mocks.insertMock
+    insert: mocks.insertMock,
+    update: mocks.updateMock
   }
 }));
 
@@ -55,11 +64,21 @@ describe("POST /api/notes", () => {
     mocks.upsertJobAuditMock.mockResolvedValue(undefined);
     mocks.enqueueJobMock.mockResolvedValue(undefined);
     mocks.returningMock.mockResolvedValue([{ id: "document-1" }]);
+    mocks.updateReturningMock.mockResolvedValue([{ id: "document-1" }]);
     mocks.valuesMock.mockReturnValue({
       returning: mocks.returningMock
     });
     mocks.insertMock.mockReturnValue({
       values: mocks.valuesMock
+    });
+    mocks.whereMock.mockReturnValue({
+      returning: mocks.updateReturningMock
+    });
+    mocks.setMock.mockReturnValue({
+      where: mocks.whereMock
+    });
+    mocks.updateMock.mockReturnValue({
+      set: mocks.setMock
     });
   });
 

@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { embedTexts } from "@syntheci/ai";
 import {
+  buildDemoInboxMessageUrl,
   chunkText,
   demoSyncEmailBatches,
   isDemoConnectedAccountMetadata,
@@ -135,9 +136,7 @@ async function persistDemoFixtureMessage(input: {
       subject: input.fixture.subject,
       textBody: input.fixture.textBody,
       htmlBody: input.fixture.htmlBody ?? null,
-      deepLink:
-        input.fixture.deepLink ??
-        `https://mail.google.com/mail/u/0/#inbox/${input.fixture.externalMessageId}`,
+      deepLink: input.fixture.deepLink ?? null,
       receivedAt: new Date(input.fixture.receivedAt),
       isUnread: input.fixture.isUnread,
       isOpenThread: input.fixture.isOpenThread ?? true,
@@ -157,9 +156,7 @@ async function persistDemoFixtureMessage(input: {
         subject: input.fixture.subject,
         textBody: input.fixture.textBody,
         htmlBody: input.fixture.htmlBody ?? null,
-        deepLink:
-          input.fixture.deepLink ??
-          `https://mail.google.com/mail/u/0/#inbox/${input.fixture.externalMessageId}`,
+        deepLink: input.fixture.deepLink ?? null,
         receivedAt: new Date(input.fixture.receivedAt),
         isUnread: input.fixture.isUnread,
         isOpenThread: input.fixture.isOpenThread ?? true,
@@ -172,8 +169,20 @@ async function persistDemoFixtureMessage(input: {
       }
     })
     .returning({
-      id: messages.id
+      id: messages.id,
+      deepLink: messages.deepLink
     });
+
+  const resolvedDeepLink = input.fixture.deepLink ?? buildDemoInboxMessageUrl(message.id);
+  if (message.deepLink !== resolvedDeepLink) {
+    await db
+      .update(messages)
+      .set({
+        deepLink: resolvedDeepLink,
+        updatedAt: new Date()
+      })
+      .where(eq(messages.id, message.id));
+  }
 
   await db
     .insert(triageResults)

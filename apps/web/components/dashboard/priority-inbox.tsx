@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -95,15 +95,31 @@ function buildEmailDocument(htmlBody: string) {
 </html>`;
 }
 
-export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
+export function PriorityInbox({
+  initialItems,
+  initialSelectedMessageId = null,
+}: {
+  initialItems: InboxItem[];
+  initialSelectedMessageId?: string | null;
+}) {
   const [items, setItems] = useState(initialItems);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
+    initialSelectedMessageId
   );
 
   const selectedMessage =
     items.find((item) => item.id === selectedMessageId) ?? null;
+
+  useEffect(() => {
+    if (!initialSelectedMessageId) {
+      return;
+    }
+
+    if (items.some((item) => item.id === initialSelectedMessageId)) {
+      setSelectedMessageId(initialSelectedMessageId);
+    }
+  }, [initialSelectedMessageId, items]);
 
   async function triageMessage(messageId: string) {
     setBusyId(messageId);

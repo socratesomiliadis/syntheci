@@ -1,9 +1,13 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 
 import {
   Building2,
+  Copy,
+  ExternalLink,
   Mail,
   Phone,
   Search,
@@ -13,6 +17,8 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
+
+import { buildContactDashboardUrl } from "@syntheci/shared";
 
 import {
   listItemReveal,
@@ -111,6 +117,9 @@ export function ContactBook({
   initialContacts: ContactBookItem[];
   initialSelectedContactId?: string | null;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [contacts, setContacts] = useState(initialContacts);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
     initialSelectedContactId ?? initialContacts[0]?.id ?? null
@@ -139,6 +148,29 @@ export function ContactBook({
       setDraft(draftFromContact(selectedContact));
     }
   }, [mode, selectedContact]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentContactId = params.get("contact");
+
+    if (selectedContactId) {
+      params.set("contact", selectedContactId);
+    } else {
+      params.delete("contact");
+    }
+
+    const nextQuery = params.toString();
+    const currentQuery = searchParams.toString();
+
+    if (
+      (selectedContactId ?? null) !== (currentContactId ?? null) ||
+      nextQuery !== currentQuery
+    ) {
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false
+      });
+    }
+  }, [pathname, router, searchParams, selectedContactId]);
 
   async function refreshContacts(preferredContactId?: string | null) {
     const response = await fetch("/api/contacts", {
@@ -199,6 +231,19 @@ export function ContactBook({
   function selectContact(contactId: string) {
     setMode("edit");
     setSelectedContactId(contactId);
+  }
+
+  async function copySelectedContactLink() {
+    if (!selectedContact) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(buildContactDashboardUrl(selectedContact.id));
+      toast.success("Contact link copied.");
+    } catch {
+      toast.error("Unable to copy contact link.");
+    }
   }
 
   const filteredContacts = contacts.filter((contact) => {
@@ -386,9 +431,31 @@ export function ContactBook({
                   </CardDescription>
                 </div>
                 {selectedContact ? (
-                  <Badge variant="secondary" className="border border-border bg-accent text-foreground">
-                    {selectedContact.messageCount} linked messages
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary" className="border border-border bg-accent text-foreground">
+                      {selectedContact.messageCount} linked messages
+                    </Badge>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => void copySelectedContactLink()}
+                    >
+                      <Copy className="size-4" />
+                      Copy link
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      render={<Link href={buildContactDashboardUrl(selectedContact.id)} target="_blank" />}
+                    >
+                      <ExternalLink className="size-4" />
+                      Open
+                    </Button>
+                  </div>
                 ) : null}
               </div>
             </CardHeader>

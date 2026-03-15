@@ -7,10 +7,15 @@ import { useRouter } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { isReasoningUIPart, isTextUIPart } from "ai";
 import {
+  BookUser,
   Edit3,
+  FileText,
+  Globe2,
   Loader2,
+  Mail,
   Menu,
   MessageSquarePlus,
+  NotebookPen,
   Search,
   Sparkles,
   Trash2
@@ -57,6 +62,66 @@ import { toUIMessage, type ChatMessage } from "@/lib/chat-ui";
 import { cn } from "@/lib/utils";
 
 const sourceOptions: SourceType[] = ["gmail", "note", "upload", "link", "contact"];
+
+function sourceTypeLabel(sourceType: SourceType) {
+  if (sourceType === "gmail") {
+    return "Inbox";
+  }
+
+  if (sourceType === "note") {
+    return "Note";
+  }
+
+  if (sourceType === "upload") {
+    return "Upload";
+  }
+
+  if (sourceType === "link") {
+    return "Link";
+  }
+
+  return "Contact";
+}
+
+function sourceTypeTone(sourceType: SourceType) {
+  if (sourceType === "gmail") {
+    return "bg-rose-100 text-rose-900";
+  }
+
+  if (sourceType === "note") {
+    return "bg-amber-100 text-amber-900";
+  }
+
+  if (sourceType === "upload") {
+    return "bg-emerald-100 text-emerald-900";
+  }
+
+  if (sourceType === "link") {
+    return "bg-sky-100 text-sky-900";
+  }
+
+  return "bg-violet-100 text-violet-900";
+}
+
+function SourceTypeIcon({ sourceType }: { sourceType: SourceType }) {
+  if (sourceType === "gmail") {
+    return <Mail className="size-4" />;
+  }
+
+  if (sourceType === "note") {
+    return <NotebookPen className="size-4" />;
+  }
+
+  if (sourceType === "upload") {
+    return <FileText className="size-4" />;
+  }
+
+  if (sourceType === "link") {
+    return <Globe2 className="size-4" />;
+  }
+
+  return <BookUser className="size-4" />;
+}
 
 function messageText(message: ChatMessage) {
   return message.parts
@@ -648,12 +713,31 @@ export function ChatPanel({
                                     {citations.map((citation: ChatCitation, idx: number) => (
                                       <Source
                                         key={`${citation.messageOrDocId}-${idx}`}
-                                        href={citation.deepLink ?? "#"}
+                                        href={citation.deepLink}
                                         title={`${citation.sourceType}: ${citation.snippet.slice(0, 80)}...`}
                                       >
-                                        <span className="truncate text-left text-xs">
-                                          {citation.sourceType}: {citation.snippet.slice(0, 120)}
-                                          {citation.deepLink ? "" : " (no deep link)"}
+                                        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                          <SourceTypeIcon sourceType={citation.sourceType} />
+                                        </span>
+                                        <span className="min-w-0 flex-1 space-y-2">
+                                          <span className="flex flex-wrap items-center gap-2">
+                                            <Badge
+                                              variant="secondary"
+                                              className={cn(
+                                                "rounded-full border-0 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em]",
+                                                sourceTypeTone(citation.sourceType)
+                                              )}
+                                            >
+                                              {sourceTypeLabel(citation.sourceType)}
+                                            </Badge>
+                                            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                                              {citation.deepLink ? "Deep linked" : "Preview only"}
+                                            </span>
+                                          </span>
+                                          <span className="block text-sm leading-6 text-foreground">
+                                            {citation.snippet.slice(0, 180)}
+                                            {citation.snippet.length > 180 ? "..." : ""}
+                                          </span>
                                         </span>
                                       </Source>
                                     ))}

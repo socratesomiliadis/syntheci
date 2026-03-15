@@ -1,4 +1,5 @@
 import { and, contentChunks, contacts, db, documents, eq } from "@syntheci/db";
+import { buildContactDashboardUrl } from "@syntheci/shared";
 
 import { embedTexts } from "./embeddings";
 
@@ -11,13 +12,7 @@ function contactTitle(contact: typeof contacts.$inferSelect) {
 }
 
 export function buildContactExternalUrl(contactId: string) {
-  const baseUrl =
-    process.env.APP_BASE_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.BETTER_AUTH_URL ??
-    "http://localhost:3000";
-
-  return new URL(`/dashboard/contacts?contact=${contactId}`, baseUrl).toString();
+  return buildContactDashboardUrl(contactId);
 }
 
 export function buildContactProfileText(contact: typeof contacts.$inferSelect) {

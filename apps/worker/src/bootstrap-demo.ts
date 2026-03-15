@@ -31,6 +31,8 @@ import {
 } from "@syntheci/db";
 import {
   buildDemoConnectedAccountMetadata,
+  buildDemoInboxMessageUrl,
+  buildDocumentDashboardUrl,
   chunkText,
   demoBriefing,
   demoChatConversations,
@@ -625,8 +627,7 @@ async function seedWorkspaceData(
         subject: fixture.subject,
         textBody: fixture.textBody,
         htmlBody: fixture.htmlBody ?? null,
-        deepLink:
-          fixture.deepLink ?? `https://mail.google.com/mail/u/0/#inbox/${fixture.externalMessageId}`,
+        deepLink: fixture.deepLink ?? null,
         receivedAt: new Date(fixture.receivedAt),
         isUnread: fixture.isUnread,
         isOpenThread: fixture.isOpenThread ?? true,
@@ -642,6 +643,25 @@ async function seedWorkspaceData(
         textBody: messages.textBody,
         deepLink: messages.deepLink
       });
+
+    const resolvedDeepLink = fixture.deepLink ?? buildDemoInboxMessageUrl(message.id);
+    const [messageWithDeepLink] =
+      message.deepLink === resolvedDeepLink
+        ? [message]
+        : await db
+            .update(messages)
+            .set({
+              deepLink: resolvedDeepLink,
+              updatedAt: new Date()
+            })
+            .where(eq(messages.id, message.id))
+            .returning({
+              id: messages.id,
+              sourceId: messages.sourceId,
+              subject: messages.subject,
+              textBody: messages.textBody,
+              deepLink: messages.deepLink
+            });
 
     await db.insert(triageResults).values({
       workspaceId: input.workspaceId,
@@ -662,7 +682,7 @@ async function seedWorkspaceData(
       text: fixture.textBody
     });
 
-    messageRecords.set(fixture.key, message);
+    messageRecords.set(fixture.key, messageWithDeepLink);
   }
 
   const documentRecords = new Map<string, SeededDocumentRecord>();
@@ -676,6 +696,7 @@ async function seedWorkspaceData(
         title: note.title,
         noteBody: note.body,
         rawText: note.body,
+        externalUrl: "",
         metadata: {
           demo: true,
           key: note.key,
@@ -690,15 +711,30 @@ async function seedWorkspaceData(
         externalUrl: documents.externalUrl
       });
 
+    const [documentWithUrl] = await db
+      .update(documents)
+      .set({
+        externalUrl: buildDocumentDashboardUrl(document.id),
+        updatedAt: new Date()
+      })
+      .where(eq(documents.id, document.id))
+      .returning({
+        id: documents.id,
+        sourceId: documents.sourceId,
+        title: documents.title,
+        rawText: documents.rawText,
+        externalUrl: documents.externalUrl
+      });
+
     await indexDocumentText({
       workspaceId: input.workspaceId,
       sourceId: noteSource.id,
-      documentId: document.id,
+      documentId: documentWithUrl.id,
       title: note.title,
       text: note.body
     });
 
-    documentRecords.set(note.key, document);
+    documentRecords.set(note.key, documentWithUrl);
   }
 
   for (const link of demoLinks) {

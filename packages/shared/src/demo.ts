@@ -132,6 +132,16 @@ export const demoWorkspaceName = "Syntheci Demo Workspace";
 export const demoWorkspaceTimezone = "Europe/Athens";
 export const demoConnectorLabel = "Syntheci Demo Google";
 
+export function buildDemoInboxMessageUrl(messageId: string) {
+  const baseUrl =
+    process.env.APP_BASE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.BETTER_AUTH_URL ??
+    "http://localhost:3000";
+
+  return new URL(`/dashboard/inbox?message=${messageId}`, baseUrl).toString();
+}
+
 export const demoContacts: DemoContactFixture[] = [
   {
     key: "nina",

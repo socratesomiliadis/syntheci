@@ -4,7 +4,7 @@ import { embedQuery } from "@syntheci/ai";
 import { db } from "@syntheci/db";
 import type { SourceType } from "@syntheci/shared";
 
-const DEFAULT_CONTEXT_SOURCE_TYPES: SourceType[] = ["gmail", "note", "upload", "link"];
+const DEFAULT_CONTEXT_SOURCE_TYPES: SourceType[] = ["gmail", "note", "upload", "link", "contact"];
 const RAW_CANDIDATE_MULTIPLIER = 4;
 const MIN_RAW_CANDIDATES = 36;
 
@@ -16,6 +16,8 @@ const commercialIntentPattern =
   /\b(commercial|proposal|renewal|pricing|discount|legal|procurement)\b/i;
 const boardIntentPattern =
   /\b(board|preview|investor|pipeline|wins|narrative)\b/i;
+const peopleIntentPattern =
+  /\b(contact|contacts|person|people|email|phone|company|role|stakeholder|buyer|sender)\b/i;
 const artifactIntentPattern =
   /\b(send|share|attach|material|deck|doc|document|file|files|packet|pack|brief|outline|go into|before the review|what should i send)\b/i;
 const multiEvidencePattern =
@@ -66,6 +68,7 @@ interface RetrievalQueryProfile {
   prioritizeSecurity: boolean;
   prioritizeCommercial: boolean;
   prioritizeBoard: boolean;
+  prioritizePeople: boolean;
   prefersDocuments: boolean;
   needsMultipleEvidence: boolean;
   queryTokens: Set<string>;
@@ -176,6 +179,7 @@ export function buildRetrievalQueryProfile(question: string, sourceTypes?: Sourc
   const prioritizeSecurity = securityIntentPattern.test(normalizedQuestion);
   const prioritizeCommercial = commercialIntentPattern.test(normalizedQuestion);
   const prioritizeBoard = boardIntentPattern.test(normalizedQuestion);
+  const prioritizePeople = peopleIntentPattern.test(normalizedQuestion);
   const prefersDocuments = artifactIntentPattern.test(normalizedQuestion);
   const needsMultipleEvidence =
     prefersDocuments ||
@@ -192,6 +196,7 @@ export function buildRetrievalQueryProfile(question: string, sourceTypes?: Sourc
     prioritizeSecurity,
     prioritizeCommercial,
     prioritizeBoard,
+    prioritizePeople,
     prefersDocuments,
     needsMultipleEvidence,
     queryTokens: new Set(tokenizeRetrievalText(normalizedQuestion)),
@@ -226,6 +231,10 @@ function sourcePreferenceScore(candidate: RetrievalCandidate, profile: Retrieval
 
   if (profile.prefersDocuments) {
     score += candidate.sourceType === "gmail" ? -0.015 : 0.08;
+  }
+
+  if (candidate.sourceType === "contact") {
+    score += profile.prioritizePeople ? 0.1 : -0.08;
   }
 
   if (profile.prioritizeAction) {

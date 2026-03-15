@@ -68,4 +68,13 @@ describe("buildRetrievalQueryProfile", () => {
     expect(profile.needsMultipleEvidence).toBe(true);
     expect(profile.expansionTokens.has("answers")).toBe(true);
   });
+
+  it("keeps contacts in the default retrieval mix and boosts people queries", async () => {
+    const { buildRetrievalQueryProfile } = await import("./retrieval");
+
+    const profile = buildRetrievalQueryProfile("Who is the buyer asking about security questions?");
+
+    expect(profile.sourceTypes).toContain("contact");
+    expect(profile.prioritizePeople).toBe(true);
+  });
 });

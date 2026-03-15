@@ -5,8 +5,13 @@ import { requireWorkspaceContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function InboxPage() {
+export default async function InboxPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ message?: string }>;
+}) {
   const { workspaceId } = await requireWorkspaceContext();
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const [items, openThreadCount] = await Promise.all([
     getPriorityInbox(workspaceId),
     getOpenThreadCount(workspaceId)
@@ -44,7 +49,10 @@ export default async function InboxPage() {
         </Card>
       </section>
 
-      <PriorityInbox initialItems={items} />
+      <PriorityInbox
+        initialItems={items}
+        initialSelectedMessageId={resolvedSearchParams?.message ?? null}
+      />
     </main>
   );
 }

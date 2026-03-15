@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db, documents } from "@syntheci/db";
-import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
+import { buildDocumentDashboardUrl, JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
 
 import { upsertSource } from "@/lib/connectors";
 import { buildIdempotencyKey } from "@/lib/idempotency";
@@ -33,13 +34,23 @@ export async function POST(request: Request) {
       title: body.title,
       noteBody: body.body,
       rawText: body.body,
+      externalUrl: "",
       metadata: {
         status: "note_created"
       }
     })
     .returning();
 
-  const idempotencyKey = buildIdempotencyKey("note-process", workspaceId, document.id);
+  const [documentWithUrl] = await db
+    .update(documents)
+    .set({
+      externalUrl: buildDocumentDashboardUrl(document.id),
+      updatedAt: new Date()
+    })
+    .where(eq(documents.id, document.id))
+    .returning();
+
+  const idempotencyKey = buildIdempotencyKey("note-process", workspaceId, documentWithUrl.id);
   await upsertJobAudit({
     workspaceId,
     queueName: QUEUE_NAMES.processing,
@@ -47,7 +58,7 @@ export async function POST(request: Request) {
     idempotencyKey,
     status: "queued",
     payload: {
-      documentId: document.id
+      documentId: documentWithUrl.id
     }
   });
 
@@ -57,12 +68,12 @@ export async function POST(request: Request) {
     payload: {
       workspaceId,
       idempotencyKey,
-      documentId: document.id
+      documentId: documentWithUrl.id
     }
   });
 
   return NextResponse.json({
     ok: true,
-    documentId: document.id
+    documentId: documentWithUrl.id
   });
 }
