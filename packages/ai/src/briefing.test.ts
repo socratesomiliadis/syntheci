@@ -20,6 +20,13 @@ describe("generateDailyBriefing", () => {
   });
 
   it("generates a valid briefing", async () => {
+    const input = {
+      openThreads: [{ id: "t1" }],
+      urgentItems: [],
+      followUps: [],
+      upcomingMeetings: []
+    };
+
     mocks.generateObjectMock.mockResolvedValue({
       object: {
         summary: "Two critical follow-ups.",
@@ -41,12 +48,7 @@ describe("generateDailyBriefing", () => {
     });
 
     await expect(
-      generateDailyBriefing({
-        openThreads: [{ id: "t1" }],
-        urgentItems: [],
-        followUps: [],
-        upcomingMeetings: []
-      })
+      generateDailyBriefing(input)
     ).resolves.toEqual({
       summary: "Two critical follow-ups.",
       items: [
@@ -61,6 +63,47 @@ describe("generateDailyBriefing", () => {
               messageOrDocId: "msg-1"
             }
           ]
+        }
+      ]
+    });
+
+    expect(mocks.generateObjectMock).toHaveBeenCalledTimes(1);
+
+    const call = mocks.generateObjectMock.mock.calls[0][0];
+    expect(call.system).toContain("Map urgent items to priority");
+    expect(call.system).toContain("Only include sourceRefs when the input contains the needed source identifiers");
+    expect(call.prompt).toBe(JSON.stringify(input));
+  });
+
+  it("defaults missing sourceRefs to an empty array", async () => {
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        summary: "One follow-up to handle.",
+        items: [
+          {
+            type: "followup",
+            title: "Check in with Alex",
+            reason: "Waiting on a status update"
+          }
+        ]
+      }
+    });
+
+    await expect(
+      generateDailyBriefing({
+        openThreads: [],
+        urgentItems: [],
+        followUps: [{ messageId: "msg-1", label: "follow_up" }],
+        upcomingMeetings: []
+      })
+    ).resolves.toEqual({
+      summary: "One follow-up to handle.",
+      items: [
+        {
+          type: "followup",
+          title: "Check in with Alex",
+          reason: "Waiting on a status update",
+          sourceRefs: []
         }
       ]
     });

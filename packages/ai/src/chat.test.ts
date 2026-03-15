@@ -58,11 +58,34 @@ describe("chat workflows", () => {
     expect(result.answer).toBe("Grounded answer.");
     expect(result.citations).toHaveLength(6);
     expect(result.citations[0].snippet.length).toBeLessThanOrEqual(300);
-    expect(mocks.generateTextMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        prompt: expect.stringContaining("Question: Summarize")
-      })
+    expect(mocks.generateTextMock).toHaveBeenCalledTimes(1);
+
+    const call = mocks.generateTextMock.mock.calls[0][0];
+    expect(call.system).toContain("Use provided evidence when it is relevant.");
+    expect(call.system).toContain(
+      "For source-specific questions, treat matching source records as canonical"
     );
+    expect(call.system).toContain("Do not present unsupported claims as certain.");
+    expect(call.system).toContain("Use inline citations like [1] when citing evidence.");
+    expect(call.prompt).toContain("Question: Summarize");
+    expect(call.prompt).toContain("Evidence:\n[1] (note) chunk-content-1");
+  });
+
+  it("marks missing evidence explicitly when no chunks are retrieved", async () => {
+    mocks.generateTextMock.mockResolvedValue({
+      text: "Need more context."
+    });
+
+    const result = await answerWithCitations({
+      question: "What changed?",
+      chunks: []
+    });
+
+    expect(result.answer).toBe("Need more context.");
+    expect(result.citations).toEqual([]);
+
+    const call = mocks.generateTextMock.mock.calls[0][0];
+    expect(call.prompt).toContain("Evidence:\nNo evidence provided.");
   });
 
   it("streams answer and returns citation metadata", () => {
@@ -88,5 +111,10 @@ describe("chat workflows", () => {
     expect(output.citations).toHaveLength(1);
     expect(output.citations[0].sourceType).toBe("gmail");
     expect(mocks.streamTextMock).toHaveBeenCalledTimes(1);
+
+    const call = mocks.streamTextMock.mock.calls[0][0];
+    expect(call.system).toContain("Use inline citations like [1] when citing evidence.");
+    expect(call.system).toContain("Evidence:\n[1] (gmail) Meeting moved to 3pm.");
+    expect(call.messages).toEqual([{ role: "user", content: "What changed?" }]);
   });
 });

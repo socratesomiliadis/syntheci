@@ -5,7 +5,7 @@ import { chatAnswerSchema, sourceTypeSchema } from "@syntheci/shared";
 
 import { chatModel } from "./client";
 import { embedText } from "./embeddings";
-import { SYSTEM_PROMPT } from "./prompts";
+import { buildGroundedChatSystemPrompt } from "./prompts";
 
 const retrievalChunkSchema = z.object({
   id: z.string(),
@@ -30,7 +30,10 @@ export async function embedQuery(query: string) {
 }
 
 function buildContext(chunks: z.infer<typeof retrievalChunkSchema>[]) {
-  return chunks.map((chunk, index) => `[${index + 1}] ${chunk.content}`).join("\n\n");
+  const evidence = chunks
+    .map((chunk, index) => `[${index + 1}] (${chunk.sourceType}) ${chunk.content}`)
+    .join("\n\n");
+  return evidence || "No evidence provided.";
 }
 
 function buildCitations(chunks: z.infer<typeof retrievalChunkSchema>[]) {
@@ -51,9 +54,7 @@ export async function answerWithCitations(rawInput: z.infer<typeof chatInputSche
 
   const { text } = await generateText({
     model: chatModel,
-    system: `${SYSTEM_PROMPT}
-You will receive numbered evidence snippets.
-When answering, rely on evidence and cite the snippet numbers used.`,
+    system: buildGroundedChatSystemPrompt(),
     prompt: `Question: ${input.question}\n\nEvidence:\n${context}`
   });
 
@@ -72,12 +73,7 @@ export function streamAnswerWithCitations(rawInput: z.infer<typeof streamChatInp
 
   const result = streamText({
     model: chatModel,
-    system: `${SYSTEM_PROMPT}
-You will receive numbered evidence snippets.
-When answering, rely on evidence and cite the snippet numbers used.
-
-Evidence:
-${context}`,
+    system: buildGroundedChatSystemPrompt(context),
     messages: input.messages as ModelMessage[]
   });
 

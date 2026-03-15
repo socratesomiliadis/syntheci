@@ -17,6 +17,32 @@ export interface RetrievedChunk {
   deepLink: string | null;
 }
 
+const inferredSourceIntentPatterns: Array<{
+  sourceType: SourceType;
+  pattern: RegExp;
+}> = [
+  {
+    sourceType: "contact",
+    pattern: /\b(contact|contacts|address book)\b/i
+  },
+  {
+    sourceType: "note",
+    pattern: /\b(note|notes)\b/i
+  },
+  {
+    sourceType: "upload",
+    pattern: /\b(upload|uploads|file|files|pdf|pdfs|document|documents|attachment|attachments)\b/i
+  },
+  {
+    sourceType: "link",
+    pattern: /\b(link|links|url|urls|website|websites|webpage|web page|article|articles)\b/i
+  },
+  {
+    sourceType: "gmail",
+    pattern: /\b(email|emails|gmail|inbox|thread|threads)\b/i
+  }
+];
+
 export function buildSourceFilter(sourceTypes?: SourceType[]) {
   if (!sourceTypes || sourceTypes.length === 0) {
     return sql``;
@@ -28,6 +54,19 @@ export function buildSourceFilter(sourceTypes?: SourceType[]) {
   )})`;
 }
 
+export function inferSourceTypesFromQuestion(question: string) {
+  const normalized = question.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  const inferred = inferredSourceIntentPatterns
+    .filter(({ pattern }) => pattern.test(normalized))
+    .map(({ sourceType }) => sourceType);
+
+  return inferred.length > 0 ? [...new Set(inferred)] : undefined;
+}
+
 export async function retrieveContextChunks(input: {
   workspaceId: string;
   question: string;
@@ -37,7 +76,11 @@ export async function retrieveContextChunks(input: {
   const embedding = await embedQuery(input.question);
   const vectorLiteral = toVectorLiteral(embedding);
   const limit = input.limit ?? 12;
-  const sourceFilter = buildSourceFilter(input.sourceTypes);
+  const resolvedSourceTypes =
+    input.sourceTypes && input.sourceTypes.length > 0
+      ? input.sourceTypes
+      : inferSourceTypesFromQuestion(input.question);
+  const sourceFilter = buildSourceFilter(resolvedSourceTypes);
 
   const result = await db.execute(sql`
     with ranked as (

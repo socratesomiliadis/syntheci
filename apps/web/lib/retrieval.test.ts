@@ -32,3 +32,28 @@ describe("buildSourceFilter", () => {
     expect(JSON.stringify(fragment.queryChunks)).not.toContain('[\"gmail\",\"note\"]');
   });
 });
+
+describe("inferSourceTypesFromQuestion", () => {
+  it("infers contact queries when the user asks for contacts explicitly", async () => {
+    const { inferSourceTypesFromQuestion } = await import("./retrieval");
+
+    expect(inferSourceTypesFromQuestion("Give me a list of all my human contacts")).toEqual([
+      "contact"
+    ]);
+  });
+
+  it("infers multiple source types when the question names them", async () => {
+    const { inferSourceTypesFromQuestion } = await import("./retrieval");
+
+    expect(inferSourceTypesFromQuestion("Summarize my notes and emails about hiring")).toEqual([
+      "note",
+      "gmail"
+    ]);
+  });
+
+  it("returns undefined when the question is not source-specific", async () => {
+    const { inferSourceTypesFromQuestion } = await import("./retrieval");
+
+    expect(inferSourceTypesFromQuestion("What should I focus on this week?")).toBeUndefined();
+  });
+});

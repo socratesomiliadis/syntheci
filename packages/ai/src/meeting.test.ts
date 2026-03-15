@@ -20,6 +20,13 @@ describe("extractMeetingProposal", () => {
   });
 
   it("returns a valid meeting proposal", async () => {
+    const input = {
+      subject: "Can we sync Tuesday?",
+      body: "Let's meet at 11:00 Athens time.",
+      sender: "alex@example.com",
+      timezone: "Europe/Athens"
+    };
+
     mocks.generateObjectMock.mockResolvedValue({
       object: {
         hasSchedulingIntent: true,
@@ -31,14 +38,7 @@ describe("extractMeetingProposal", () => {
       }
     });
 
-    await expect(
-      extractMeetingProposal({
-        subject: "Can we sync Tuesday?",
-        body: "Let's meet at 11:00 Athens time.",
-        sender: "alex@example.com",
-        timezone: "Europe/Athens"
-      })
-    ).resolves.toEqual({
+    await expect(extractMeetingProposal(input)).resolves.toEqual({
       hasSchedulingIntent: true,
       title: "Launch Sync",
       startsAt: "2026-03-10T09:00:00.000Z",
@@ -46,6 +46,14 @@ describe("extractMeetingProposal", () => {
       attendees: ["alex@example.com"],
       rationale: "Explicit scheduling request."
     });
+
+    expect(mocks.generateObjectMock).toHaveBeenCalledTimes(1);
+
+    const call = mocks.generateObjectMock.mock.calls[0][0];
+    expect(call.system).toContain("Use the provided timezone to interpret relative dates and times.");
+    expect(call.system).toContain("Set startsAt and endsAt to ISO datetimes only when the message gives enough information; otherwise use null.");
+    expect(call.system).toContain("Include attendees only when explicit email addresses are stated in the message; otherwise use [].");
+    expect(call.prompt).toBe(JSON.stringify(input));
   });
 
   it("allows a null title when there is no scheduling intent", async () => {
@@ -93,5 +101,25 @@ describe("extractMeetingProposal", () => {
         timezone: "Europe/Athens"
       })
     ).rejects.toThrow();
+  });
+
+  it("rejects proposals whose end time is not after the start time", async () => {
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        hasSchedulingIntent: true,
+        title: "Broken Timing",
+        startsAt: "2026-03-10T09:30:00.000Z",
+        endsAt: "2026-03-10T09:00:00.000Z",
+        attendees: [],
+        rationale: "Includes a meeting time."
+      }
+    });
+
+    await expect(
+      extractMeetingProposal({
+        body: "Let's meet at 11.",
+        timezone: "Europe/Athens"
+      })
+    ).rejects.toThrow("endsAt must be after startsAt");
   });
 });
