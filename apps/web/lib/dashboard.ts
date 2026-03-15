@@ -23,6 +23,8 @@ export async function getPriorityInbox(workspaceId: string) {
     .select({
       id: messages.id,
       subject: messages.subject,
+      textBody: messages.textBody,
+      htmlBody: messages.htmlBody,
       senderName: messages.senderName,
       senderEmail: messages.senderEmail,
       receivedAt: messages.receivedAt,
