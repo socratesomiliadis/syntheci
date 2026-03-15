@@ -2,11 +2,15 @@
 > This project was created for the Netcompany Hackathon 2026.
 > It is intentionally MVP-shaped: ambitious, end-to-end, and optimized for demoability, speed, and product clarity over production-hardening.
 
+![Syntheci banner](./readme-banner.png)
+
 <div align="center">
 
 # Syntheci
 
-### An AI workspace for turning scattered operational context into action
+### An AI-Powered Knowledge Base system for turning scattered operational context into action
+
+**Synthesize everything. Act on what matters.**
 
 <p>
   <img alt="Hackathon" src="https://img.shields.io/badge/Netcompany-Hackathon%202026-0f172a?style=for-the-badge">
@@ -26,7 +30,7 @@
 
 </div>
 
-Syntheci is an AI workspace for turning scattered operational context into an actionable system.
+Syntheci is an AI-Powered Knowledge Base system for turning scattered operational context into an actionable system.
 
 It combines:
 
@@ -48,7 +52,7 @@ All of that runs inside a pnpm monorepo built with Next.js, BullMQ, Postgres + p
   <tr>
     <td valign="top" width="33%">
       <strong>What it feels like</strong><br>
-      A second brain for operational work: triage what matters, ask grounded questions, approve the right actions, and keep context in one place.
+      An operational knowledge base that helps teams triage what matters, ask grounded questions, approve the right actions, and keep context in one place.
     </td>
     <td valign="top" width="33%">
       <strong>What powers it</strong><br>
@@ -118,7 +122,7 @@ Syntheci is designed to act like a second operational brain:
 - propose actions
 - require explicit human approval before high-impact sends or calendar creation
 
-The result is a workspace that is useful both as a demoable hackathon MVP and as a serious architecture for retrieval, triage, and approval-based automation.
+The result is an AI-Powered Knowledge Base system that is useful both as a demoable hackathon MVP and as a serious architecture for retrieval, triage, and approval-based automation.
 
 > [!TIP]
 > If you want the fastest path to seeing the product, use the seeded demo login after running the bootstrap flow. The demo workspace already contains messages, notes, links, files, briefings, meetings, contacts, and saved chat threads.
