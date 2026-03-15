@@ -10,6 +10,16 @@ function contactTitle(contact: typeof contacts.$inferSelect) {
   return contact.name?.trim() || contact.email?.trim() || "Unnamed contact";
 }
 
+export function buildContactExternalUrl(contactId: string) {
+  const baseUrl =
+    process.env.APP_BASE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.BETTER_AUTH_URL ??
+    "http://localhost:3000";
+
+  return new URL(`/dashboard/contacts?contact=${contactId}`, baseUrl).toString();
+}
+
 export function buildContactProfileText(contact: typeof contacts.$inferSelect) {
   const sections = [
     `Contact: ${contactTitle(contact)}`,
@@ -32,7 +42,7 @@ export async function syncContactKnowledgeDocument(input: {
 }) {
   const rawText = buildContactProfileText(input.contact);
   const title = contactTitle(input.contact);
-  const externalUrl = `/dashboard/contacts?contact=${input.contact.id}`;
+  const externalUrl = buildContactExternalUrl(input.contact.id);
 
   const existingDocument = await db.query.documents.findFirst({
     where: and(

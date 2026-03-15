@@ -7,8 +7,8 @@ import { MEETING_EXTRACTION_PROMPT } from "./prompts";
 const meetingProposalSchema = z.object({
   hasSchedulingIntent: z.boolean(),
   title: z.string().min(1).nullable(),
-  startsAt: z.string().datetime().nullable(),
-  endsAt: z.string().datetime().nullable(),
+  startsAt: z.string().datetime({ offset: true }).nullable(),
+  endsAt: z.string().datetime({ offset: true }).nullable(),
   attendees: z.array(z.string().email()),
   rationale: z.string().min(1)
 }).superRefine((value, ctx) => {
@@ -25,7 +25,8 @@ const meetingExtractionInputSchema = z.object({
   subject: z.string().nullable().optional(),
   body: z.string().min(1),
   sender: z.string().nullable().optional(),
-  timezone: z.string().min(1)
+  timezone: z.string().min(1),
+  referenceTime: z.string().datetime({ offset: true }).optional()
 });
 
 export async function extractMeetingProposal(input: {
@@ -33,6 +34,7 @@ export async function extractMeetingProposal(input: {
   body: string;
   sender?: string | null;
   timezone: string;
+  referenceTime?: string;
 }) {
   const parsedInput = meetingExtractionInputSchema.parse(input);
   const { object } = await generateObject({

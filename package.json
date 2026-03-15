@@ -12,6 +12,7 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "benchmark": "dotenv -e .env -- pnpm --filter @syntheci/evals benchmark",
     "db:migrate": "dotenv -e .env -- pnpm --filter @syntheci/db db:migrate",
     "db:generate": "dotenv -e .env -- pnpm --filter @syntheci/db db:generate",
     "compose:up": "docker compose up --build",

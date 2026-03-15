@@ -20,8 +20,8 @@ import {
   upsertObservedContact
 } from "@syntheci/db";
 
-import { syncContactKnowledge } from "@/lib/contacts";
-import { upsertJobAudit } from "@/lib/jobs-audit";
+import { syncContactKnowledge } from "./contacts";
+import { upsertJobAudit } from "./jobs-audit";
 
 function resolveDemoMetadata(metadata: unknown) {
   return isDemoConnectedAccountMetadata(metadata) ? metadata : null;

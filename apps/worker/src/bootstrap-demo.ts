@@ -1,4 +1,6 @@
 import crypto, { randomUUID } from "node:crypto";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { betterAuth } from "better-auth";
@@ -241,7 +243,24 @@ interface SeededDocumentRecord {
   externalUrl: string | null;
 }
 
-function log(message: string, data?: Record<string, unknown>) {
+export interface BootstrapDemoSeedResult {
+  workspaceId: string;
+  connectedAccountId: string;
+  sources: {
+    gmail: string;
+    note: string;
+    link: string;
+    upload: string;
+    contact: string;
+  };
+  messages: number;
+  documents: number;
+  contacts: number;
+  drafts: string[];
+  meetings: number;
+}
+
+function log(message: string, data?: object) {
   if (data) {
     console.log(`[bootstrap-demo] ${message}`, data);
     return;
@@ -453,7 +472,9 @@ function uniqueSourceTypes(refs: DemoReferenceFixture[] | undefined) {
   return [...new Set((refs ?? []).map((ref) => ref.sourceType))];
 }
 
-async function seedWorkspaceData(input: { workspaceId: string; userId: string }) {
+async function seedWorkspaceData(
+  input: { workspaceId: string; userId: string }
+): Promise<BootstrapDemoSeedResult> {
   const [demoAccount] = await db
     .insert(connectedAccounts)
     .values({
@@ -882,10 +903,10 @@ async function seedWorkspaceData(input: { workspaceId: string; userId: string })
   };
 }
 
-async function main() {
+export async function bootstrapDemoWorkspace() {
   if (!env.DEMO_MODE_ENABLED) {
     log("Demo mode disabled, skipping bootstrap.");
-    return;
+    return null;
   }
 
   await ensureBootstrapSchema();
@@ -897,14 +918,23 @@ async function main() {
   });
 
   log("Demo workspace ready.", result);
+  return result;
 }
 
-main()
-  .then(async () => {
-    await pool.end();
-  })
-  .catch(async (error) => {
+export async function runBootstrapDemoCli() {
+  try {
+    await bootstrapDemoWorkspace();
+  } catch (error) {
     console.error("[bootstrap-demo] Failed to bootstrap demo workspace", error);
-    await pool.end();
     process.exitCode = 1;
-  });
+  } finally {
+    await pool.end();
+  }
+}
+
+const isDirectExecution =
+  process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+  void runBootstrapDemoCli();
+}

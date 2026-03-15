@@ -3,12 +3,12 @@ import { and, asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { generateDailyBriefing } from "@syntheci/ai";
 import { briefings, db, meetingProposals, messages, triageResults } from "@syntheci/db";
 
-export async function buildAndStoreBriefing(input: {
+export async function buildBriefingInput(input: {
   workspaceId: string;
-  briefingDate: string;
+  referenceTime?: Date;
 }) {
-  const now = new Date();
-  const inThreeDays = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const now = input.referenceTime ?? new Date();
+  const inThreeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
   const [openThreads, urgentItems, followUps, upcomingMeetings] = await Promise.all([
     db.query.messages.findMany({
@@ -59,7 +59,7 @@ export async function buildAndStoreBriefing(input: {
     (meeting) => meeting.startsAt && meeting.startsAt <= inThreeDays
   );
 
-  const generated = await generateDailyBriefing({
+  return {
     openThreads: openThreads.map((thread) => ({
       id: thread.id,
       subject: thread.subject,
@@ -75,7 +75,20 @@ export async function buildAndStoreBriefing(input: {
       startsAt: meeting.startsAt,
       attendees: meeting.attendees
     }))
+  };
+}
+
+export async function buildAndStoreBriefing(input: {
+  workspaceId: string;
+  briefingDate: string;
+  referenceTime?: Date;
+}) {
+  const briefingInput = await buildBriefingInput({
+    workspaceId: input.workspaceId,
+    referenceTime: input.referenceTime
   });
+
+  const generated = await generateDailyBriefing(briefingInput);
 
   const [saved] = await db
     .insert(briefings)

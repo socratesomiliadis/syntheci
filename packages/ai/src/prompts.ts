@@ -31,6 +31,7 @@ Keep the reply concise, specific, and actionable.`;
 export const MEETING_EXTRACTION_PROMPT = `Extract meeting proposal data from one message.
 hasSchedulingIntent is true only when the message asks to schedule, reschedule, confirm, or propose a meeting, call, or specific time.
 Use the provided timezone to interpret relative dates and times.
+When referenceTime is provided, use it as the anchor for resolving words like today, tomorrow, next week, Wednesday, or Thursday.
 Set startsAt and endsAt to ISO datetimes only when the message gives enough information; otherwise use null.
 If both are present, endsAt must be after startsAt.
 Include attendees only when explicit email addresses are stated in the message; otherwise use [].

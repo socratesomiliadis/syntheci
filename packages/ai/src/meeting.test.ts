@@ -24,7 +24,8 @@ describe("extractMeetingProposal", () => {
       subject: "Can we sync Tuesday?",
       body: "Let's meet at 11:00 Athens time.",
       sender: "alex@example.com",
-      timezone: "Europe/Athens"
+      timezone: "Europe/Athens",
+      referenceTime: "2026-03-08T10:00:00.000Z"
     };
 
     mocks.generateObjectMock.mockResolvedValue({
@@ -51,6 +52,7 @@ describe("extractMeetingProposal", () => {
 
     const call = mocks.generateObjectMock.mock.calls[0][0];
     expect(call.system).toContain("Use the provided timezone to interpret relative dates and times.");
+    expect(call.system).toContain("When referenceTime is provided, use it as the anchor");
     expect(call.system).toContain("Set startsAt and endsAt to ISO datetimes only when the message gives enough information; otherwise use null.");
     expect(call.system).toContain("Include attendees only when explicit email addresses are stated in the message; otherwise use [].");
     expect(call.prompt).toBe(JSON.stringify(input));
@@ -121,5 +123,33 @@ describe("extractMeetingProposal", () => {
         timezone: "Europe/Athens"
       })
     ).rejects.toThrow("endsAt must be after startsAt");
+  });
+
+  it("accepts ISO timestamps with explicit timezone offsets", async () => {
+    mocks.generateObjectMock.mockResolvedValue({
+      object: {
+        hasSchedulingIntent: true,
+        title: "Offset Time",
+        startsAt: "2026-03-19T10:00:00+02:00",
+        endsAt: "2026-03-19T10:30:00+02:00",
+        attendees: [],
+        rationale: "Explicit scheduling request."
+      }
+    });
+
+    await expect(
+      extractMeetingProposal({
+        body: "Thursday at 10:00 Athens works.",
+        timezone: "Europe/Athens",
+        referenceTime: "2026-03-14T12:25:00.000Z"
+      })
+    ).resolves.toEqual({
+      hasSchedulingIntent: true,
+      title: "Offset Time",
+      startsAt: "2026-03-19T10:00:00+02:00",
+      endsAt: "2026-03-19T10:30:00+02:00",
+      attendees: [],
+      rationale: "Explicit scheduling request."
+    });
   });
 });

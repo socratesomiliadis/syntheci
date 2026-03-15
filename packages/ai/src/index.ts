@@ -5,4 +5,5 @@ export * from "./contact-indexing";
 export * from "./draft";
 export * from "./embeddings";
 export * from "./meeting";
+export * from "./prompts";
 export * from "./triage";
