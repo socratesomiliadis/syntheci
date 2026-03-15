@@ -18,7 +18,6 @@ import {
   MessageSquarePlus,
   NotebookPen,
   Search,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -42,7 +41,6 @@ import {
 import {
   PromptInput,
   PromptInputBody,
-  PromptInputFooter,
   PromptInputSubmit,
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
@@ -592,11 +590,6 @@ export function ChatPanel({
   const activeConversationId = activeConversation?.id ?? null;
   const showAssistantPlaceholder =
     status === "submitted" || (status === "streaming" && !streamingMessageId);
-  const activeConversationLabel = activeConversation?.title ?? "New chat";
-  const activeFilterSummary =
-    selectedSources.length === 0
-      ? "Searching all connected context"
-      : `Scoped to ${selectedSources.map(sourceTypeLabel).join(", ")}`;
 
   const rail = (
     <ConversationList

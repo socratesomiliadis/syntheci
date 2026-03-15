@@ -1,6 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 
-import { embedTexts } from "@syntheci/ai";
+import { and, desc, eq } from "drizzle-orm";
+
+import { chatModelVersion, classifyMessageTriage, embedTexts } from "@syntheci/ai";
 import {
   buildDemoInboxMessageUrl,
   chunkText,
@@ -34,6 +36,43 @@ export function isDemoConnectedAccount(account: { metadata: unknown }) {
 
 export function getDemoMetadata(metadata: unknown) {
   return resolveDemoMetadata(metadata);
+}
+
+export async function getDemoGmailSource(input: { workspaceId: string }) {
+  const accounts = await db.query.connectedAccounts.findMany({
+    where: and(
+      eq(connectedAccounts.workspaceId, input.workspaceId),
+      eq(connectedAccounts.provider, "google")
+    ),
+    columns: {
+      id: true,
+      metadata: true,
+      updatedAt: true
+    },
+    orderBy: [desc(connectedAccounts.updatedAt)]
+  });
+
+  const demoAccount = accounts.find((account) => isDemoConnectedAccount(account));
+  if (!demoAccount) {
+    return null;
+  }
+
+  const gmailSource = await db.query.sources.findFirst({
+    where: and(
+      eq(sources.workspaceId, input.workspaceId),
+      eq(sources.connectedAccountId, demoAccount.id),
+      eq(sources.type, "gmail")
+    )
+  });
+
+  if (!gmailSource) {
+    return null;
+  }
+
+  return {
+    connectedAccountId: demoAccount.id,
+    sourceId: gmailSource.id
+  };
 }
 
 function buildIndexableMessageText(input: {
@@ -100,6 +139,141 @@ async function indexDemoMessageText(input: {
   );
 
   return chunks.length;
+}
+
+export async function createDemoMessage(input: {
+  workspaceId: string;
+  sourceId: string;
+  senderName: string | null;
+  senderEmail: string;
+  subject: string;
+  textBody: string;
+  htmlBody?: string | null;
+  receivedAt?: Date;
+  isUnread?: boolean;
+  isOpenThread?: boolean;
+}) {
+  const receivedAt = input.receivedAt ?? new Date();
+  const contact = await upsertObservedContact({
+    workspaceId: input.workspaceId,
+    name: input.senderName,
+    email: input.senderEmail,
+    origin: "gmail_sender",
+    observedAt: receivedAt,
+    lastMessageAt: receivedAt,
+    metadata: {
+      source: "demo_gmail",
+      manual: true
+    }
+  });
+
+  if (contact) {
+    await syncContactKnowledge(contact);
+  }
+
+  const externalMessageId = `demo-manual-msg-${randomUUID()}`;
+  const externalThreadId = `demo-manual-thread-${randomUUID()}`;
+
+  const [message] = await db
+    .insert(messages)
+    .values({
+      workspaceId: input.workspaceId,
+      sourceId: input.sourceId,
+      senderContactId: contact?.id ?? null,
+      externalMessageId,
+      externalThreadId,
+      senderName: input.senderName,
+      senderEmail: input.senderEmail,
+      subject: input.subject,
+      textBody: input.textBody,
+      htmlBody: input.htmlBody ?? null,
+      deepLink: null,
+      receivedAt,
+      isUnread: input.isUnread ?? true,
+      isOpenThread: input.isOpenThread ?? true,
+      rawPayload: {
+        demo: true,
+        manual: true,
+        createdAt: new Date().toISOString()
+      }
+    })
+    .returning({
+      id: messages.id
+    });
+
+  const deepLink = buildDemoInboxMessageUrl(message.id);
+
+  const [updatedMessage] = await db
+    .update(messages)
+    .set({
+      deepLink,
+      updatedAt: new Date()
+    })
+    .where(eq(messages.id, message.id))
+    .returning({
+      id: messages.id,
+      subject: messages.subject,
+      textBody: messages.textBody,
+      htmlBody: messages.htmlBody,
+      senderName: messages.senderName,
+      senderEmail: messages.senderEmail,
+      receivedAt: messages.receivedAt,
+      isUnread: messages.isUnread
+    });
+
+  await indexDemoMessageText({
+    workspaceId: input.workspaceId,
+    sourceId: input.sourceId,
+    messageId: updatedMessage.id,
+    subject: updatedMessage.subject,
+    senderName: updatedMessage.senderName,
+    senderEmail: updatedMessage.senderEmail,
+    text: updatedMessage.textBody
+  });
+
+  return updatedMessage;
+}
+
+export async function triageDemoMessage(input: {
+  workspaceId: string;
+  messageId: string;
+  subject: string | null;
+  textBody: string;
+  senderEmail: string | null;
+}) {
+  const triage = await classifyMessageTriage({
+    subject: input.subject,
+    body: input.textBody,
+    sender: input.senderEmail
+  });
+
+  const [saved] = await db
+    .insert(triageResults)
+    .values({
+      workspaceId: input.workspaceId,
+      messageId: input.messageId,
+      label: triage.label,
+      confidence: triage.confidence,
+      rationale: triage.rationale,
+      modelVersion: chatModelVersion
+    })
+    .onConflictDoUpdate({
+      target: triageResults.messageId,
+      set: {
+        label: triage.label,
+        confidence: triage.confidence,
+        rationale: triage.rationale,
+        modelVersion: chatModelVersion,
+        updatedAt: new Date()
+      }
+    })
+    .returning({
+      label: triageResults.label,
+      confidence: triageResults.confidence,
+      rationale: triageResults.rationale
+    });
+
+  return saved;
 }
 
 async function persistDemoFixtureMessage(input: {

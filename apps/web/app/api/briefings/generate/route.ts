@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { briefings, db } from "@syntheci/db";
 import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
+import { and, eq } from "drizzle-orm";
 
 import { buildIdempotencyKey } from "@/lib/idempotency";
 import { upsertJobAudit } from "@/lib/jobs-audit";
@@ -10,9 +12,13 @@ import { requireWorkspaceContext } from "@/lib/session";
 
 const requestSchema = z
   .object({
-    date: z.string().date().optional()
+    date: z.string().date().optional(),
+    waitForCompletion: z.boolean().optional()
   })
   .optional();
+
+const WAIT_TIMEOUT_MS = 12_000;
+const WAIT_INTERVAL_MS = 400;
 
 function currentDateInTimezone(timeZone: string) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -23,10 +29,52 @@ function currentDateInTimezone(timeZone: string) {
   }).format(new Date());
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForBriefing(input: {
+  workspaceId: string;
+  briefingDate: string;
+  previousGeneratedAt?: Date | null;
+  timeoutMs?: number;
+}) {
+  const deadline = Date.now() + (input.timeoutMs ?? WAIT_TIMEOUT_MS);
+
+  while (Date.now() < deadline) {
+    const briefing = await db.query.briefings.findFirst({
+      where: and(
+        eq(briefings.workspaceId, input.workspaceId),
+        eq(briefings.briefingDate, input.briefingDate)
+      )
+    });
+
+    if (
+      briefing &&
+      (!input.previousGeneratedAt ||
+        briefing.generatedAt.getTime() > input.previousGeneratedAt.getTime())
+    ) {
+      return briefing;
+    }
+
+    await sleep(WAIT_INTERVAL_MS);
+  }
+
+  return null;
+}
+
 export async function POST(request: Request) {
   const { workspaceId } = await requireWorkspaceContext();
   const body = requestSchema.parse(await request.json().catch(() => undefined));
   const briefingDate = body?.date ?? currentDateInTimezone("Europe/Athens");
+  const existingBriefing = body?.waitForCompletion
+    ? await db.query.briefings.findFirst({
+        where: and(
+          eq(briefings.workspaceId, workspaceId),
+          eq(briefings.briefingDate, briefingDate)
+        )
+      })
+    : null;
   const idempotencyKey = buildIdempotencyKey("briefing", workspaceId, briefingDate);
 
   await upsertJobAudit({
@@ -50,8 +98,26 @@ export async function POST(request: Request) {
     }
   });
 
+  if (body?.waitForCompletion) {
+    const briefing = await waitForBriefing({
+      workspaceId,
+      briefingDate,
+      previousGeneratedAt: existingBriefing?.generatedAt ?? null
+    });
+
+    if (briefing) {
+      return NextResponse.json({
+        ok: true,
+        briefingDate,
+        completed: true,
+        briefing
+      });
+    }
+  }
+
   return NextResponse.json({
     ok: true,
-    briefingDate
+    briefingDate,
+    completed: false
   });
 }

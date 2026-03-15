@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PriorityInbox } from "@/components/dashboard/priority-inbox";
-import { getOpenThreadCount, getPriorityInbox } from "@/lib/dashboard";
+import { getConnectorStatus, getOpenThreadCount, getPriorityInbox } from "@/lib/dashboard";
 import { requireWorkspaceContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +12,12 @@ export default async function InboxPage({
 }) {
   const { workspaceId } = await requireWorkspaceContext();
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const [items, openThreadCount] = await Promise.all([
+  const [items, openThreadCount, connectors] = await Promise.all([
     getPriorityInbox(workspaceId),
-    getOpenThreadCount(workspaceId)
+    getOpenThreadCount(workspaceId),
+    getConnectorStatus(workspaceId)
   ]);
+  const demoMode = connectors.some((connector) => connector.demo);
 
   const unreadCount = items.filter((item) => item.isUnread).length;
   const urgentCount = items.filter((item) => item.label === "urgent").length;
@@ -52,6 +54,7 @@ export default async function InboxPage({
       <PriorityInbox
         initialItems={items}
         initialSelectedMessageId={resolvedSearchParams?.message ?? null}
+        demoMode={demoMode}
       />
     </main>
   );

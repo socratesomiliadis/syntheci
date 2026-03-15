@@ -82,6 +82,7 @@ export default async function DashboardOverviewPage() {
   const pendingDrafts = Number(pendingDraftCount[0]?.count ?? 0);
   const pendingMeetings = Number(pendingMeetingCount[0]?.count ?? 0);
   const topInboxItems = inbox.slice(0, 4);
+  const demoMode = connectors.some((connector) => connector.demo);
   const operationalSummary = [
     `${connectors.length} provider${
       connectors.length === 1 ? "" : "s"
@@ -189,9 +190,11 @@ export default async function DashboardOverviewPage() {
                     briefingDate: latestBriefing.briefingDate,
                     summary: latestBriefing.summary,
                     items: latestBriefing.items as BriefingItem[],
+                    generatedAt: latestBriefing.generatedAt,
                   }
                 : null
             }
+            demoMode={demoMode}
           />
           <Card className="rounded-[1.6rem] border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
