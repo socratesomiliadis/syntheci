@@ -48,7 +48,7 @@ export function DashboardShell({
     <SidebarProvider>
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader className="gap-3 p-3">
-          <div className="overflow-hidden rounded-[1.25rem] border border-sidebar-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.98),rgba(226,232,240,0.82))] px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+        <div className="overflow-hidden rounded-[1.25rem] border border-sidebar-border/80 bg-sidebar px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sidebar-foreground/55">
               Workspace
             </p>
@@ -121,7 +121,7 @@ export function DashboardShell({
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset className="overflow-hidden border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(244,247,252,0.98))]">
+      <SidebarInset className="overflow-hidden border border-border/60 bg-background">
         <header className="sticky top-0 z-20 border-b border-border/80 bg-card/82 px-4 py-4 backdrop-blur-xl md:px-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-start gap-3">

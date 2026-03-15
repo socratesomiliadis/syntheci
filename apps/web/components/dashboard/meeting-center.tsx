@@ -360,8 +360,8 @@ export function MeetingCenter({
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
       <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-        <Card className="overflow-hidden border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] shadow-sm">
-          <CardHeader className="gap-5 border-b border-border/80 bg-[radial-gradient(circle_at_top_left,rgba(191,219,254,0.26),transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.94),rgba(255,255,255,0.96))]">
+        <Card className="overflow-hidden border-border/80 bg-card shadow-sm">
+          <CardHeader className="gap-5 border-b border-border/80 bg-card">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">

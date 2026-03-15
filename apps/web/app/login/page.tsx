@@ -37,20 +37,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <main
-      className="relative min-h-svh overflow-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, color-mix(in oklab, var(--background), var(--info) 8%), var(--background) 48%, color-mix(in oklab, var(--background), var(--warning) 10%))"
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 10% 20%, color-mix(in oklab, var(--info), transparent 82%) 0%, transparent 38%), radial-gradient(circle at 90% 10%, color-mix(in oklab, var(--warning), transparent 84%) 0%, transparent 40%)"
-        }}
-      />
+    <main className="relative min-h-svh overflow-hidden bg-background">
       <section className="relative mx-auto flex min-h-svh w-full max-w-5xl items-center justify-center px-6 py-12">
         <Card className="w-full max-w-xl border-primary/15 bg-card/95 shadow-xl shadow-primary/20 backdrop-blur">
           <CardHeader className="space-y-4">

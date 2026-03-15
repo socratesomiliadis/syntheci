@@ -233,7 +233,7 @@ export function ContactBook({
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
       <div className="space-y-6">
         <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-[1.8rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(237,246,255,0.94))] shadow-sm">
+          <Card className="rounded-[1.8rem] border-border/80 bg-card/95 shadow-sm">
             <CardHeader className="space-y-4">
               <Badge className="w-fit tone-info">
                 <BookUser className="mr-1 size-3.5" />

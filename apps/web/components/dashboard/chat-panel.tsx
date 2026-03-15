@@ -523,7 +523,7 @@ export function ChatPanel({
           </CardHeader>
 
           <CardContent className="space-y-4 pt-4">
-            <div className="relative h-[33rem] overflow-hidden rounded-[1.4rem] border border-border bg-[linear-gradient(180deg,rgba(248,250,252,0.9),rgba(255,255,255,1))]">
+            <div className="relative h-[33rem] overflow-hidden rounded-[1.4rem] border border-border bg-card">
               <Conversation>
                 <ConversationContent className="gap-6 px-4 py-5">
                   <AnimatePresence mode="popLayout" initial={false}>

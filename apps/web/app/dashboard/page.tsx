@@ -59,7 +59,7 @@ export default async function DashboardOverviewPage() {
 
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
-      <section className="overflow-hidden rounded-[1.8rem] border border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,248,237,0.94))] p-6 shadow-[0_20px_70px_rgba(15,23,42,0.08)]">
+      <section className="overflow-hidden rounded-[1.8rem] border border-border/80 bg-card/95 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-4">
             <Badge className="tone-warning">
@@ -92,7 +92,7 @@ export default async function DashboardOverviewPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[1.5rem] border-warning/25 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(255,255,255,0.96))] shadow-sm">
+        <Card className="rounded-[1.5rem] border-warning/25 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-foreground">Open priority threads</CardTitle>
             <CardDescription>Threads that still need attention.</CardDescription>
@@ -106,7 +106,7 @@ export default async function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[1.5rem] border-info/25 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.96))] shadow-sm">
+        <Card className="rounded-[1.5rem] border-info/25 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-foreground">Pending draft approvals</CardTitle>
             <CardDescription>Generated replies waiting on a human decision.</CardDescription>
@@ -120,7 +120,7 @@ export default async function DashboardOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[1.5rem] border-success/25 bg-[linear-gradient(180deg,rgba(236,253,245,0.96),rgba(255,255,255,0.96))] shadow-sm">
+        <Card className="rounded-[1.5rem] border-success/25 bg-card shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-foreground">Meeting proposals waiting</CardTitle>
             <CardDescription>Scheduling intents needing review before creation.</CardDescription>

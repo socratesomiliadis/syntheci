@@ -22,7 +22,7 @@ export default async function ContactsPage({
 
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
-      <Card className="rounded-[1.75rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(238,250,248,0.96))] shadow-sm">
+      <Card className="rounded-[1.75rem] border-border/80 bg-card/95 shadow-sm">
         <CardHeader>
           <CardTitle className="text-3xl tracking-tight text-foreground">
             Contacts become durable system context, not just names in an inbox.

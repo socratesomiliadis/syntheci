@@ -29,7 +29,7 @@ export default async function MeetingsPage() {
   return (
     <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="rounded-[1.75rem] border-border/80 bg-[linear-gradient(145deg,rgba(255,255,255,0.97),rgba(239,246,255,0.95))] shadow-sm">
+      <Card className="rounded-[1.75rem] border-border/80 bg-card/95 shadow-sm">
           <CardHeader>
             <CardTitle className="text-3xl tracking-tight text-foreground">
               See your real calendar, then turn extracted scheduling intent into confirmed events.
