@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useDeferredValue, useEffect, useState } from "react";
 
-import { Loader2, Upload } from "lucide-react";
+import {
+  ExternalLink,
+  FileText,
+  LibraryBig,
+  Link2,
+  Loader2,
+  NotebookPen,
+  Search,
+  Upload
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 
@@ -14,17 +25,112 @@ import {
   statusReveal,
   withStagger
 } from "@/components/dashboard/motion-presets";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import type { IngestionDocumentItem } from "@/lib/ingestion";
+import { cn } from "@/lib/utils";
 
-export function IngestPanel() {
+function formatCreatedAt(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function summarizeText(text: string) {
+  return text.replace(/\s+/g, " ").trim().slice(0, 220);
+}
+
+function fullDocumentText(document: IngestionDocumentItem) {
+  return (document.noteBody ?? document.rawText).trim();
+}
+
+function extractHost(url: string | null) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    return new URL(url).host.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function SectionIcon({ sourceType }: { sourceType: IngestionDocumentItem["sourceType"] }) {
+  if (sourceType === "note") {
+    return <NotebookPen className="size-4" />;
+  }
+
+  if (sourceType === "link") {
+    return <Link2 className="size-4" />;
+  }
+
+  return <FileText className="size-4" />;
+}
+
+type LibraryFilter = "all" | IngestionDocumentItem["sourceType"];
+
+export function IngestPanel({ documents }: { documents: IngestionDocumentItem[] }) {
+  const router = useRouter();
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<LibraryFilter>("all");
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(documents[0]?.id ?? null);
+  const deferredQuery = useDeferredValue(query);
+  const noteDocuments = documents.filter((document) => document.sourceType === "note");
+  const linkDocuments = documents.filter((document) => document.sourceType === "link");
+  const uploadDocuments = documents.filter((document) => document.sourceType === "upload");
+  const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const filteredDocuments = documents.filter((document) => {
+    if (activeFilter !== "all" && document.sourceType !== activeFilter) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    const searchableText = [
+      document.title,
+      document.sourceType,
+      document.rawText,
+      document.noteBody,
+      document.externalUrl
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedQuery);
+  });
+  const selectedDocument =
+    filteredDocuments.find((document) => document.id === selectedDocumentId) ?? filteredDocuments[0] ?? null;
+
+  useEffect(() => {
+    if (!selectedDocument) {
+      if (selectedDocumentId !== null) {
+        setSelectedDocumentId(null);
+      }
+      return;
+    }
+
+    if (selectedDocument.id !== selectedDocumentId) {
+      setSelectedDocumentId(selectedDocument.id);
+    }
+  }, [selectedDocument, selectedDocumentId]);
 
   async function createNote() {
     if (!noteBody.trim()) return;
@@ -41,6 +147,7 @@ export function IngestPanel() {
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setNoteTitle("");
       setNoteBody("");
+      router.refresh();
       toast.success("Note saved and queued for embedding.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Note failed");
@@ -60,6 +167,7 @@ export function IngestPanel() {
       });
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setLinkUrl("");
+      router.refresh();
       toast.success("Link queued for extraction and embeddings.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Link import failed");
@@ -105,6 +213,7 @@ export function IngestPanel() {
       });
       if (!completeResponse.ok) throw new Error("Upload completion failed");
 
+      router.refresh();
       toast.success("Upload indexed and queued for processing.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed");
@@ -219,6 +328,180 @@ export function IngestPanel() {
               </motion.div>
             ) : null}
           </AnimatePresence>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6 border-border shadow-sm">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <CardTitle className="text-lg">Document Library</CardTitle>
+              <CardDescription>
+                Search, filter, and preview every note, link, and uploaded document in the workspace.
+              </CardDescription>
+            </div>
+            <div className="grid min-w-[240px] flex-1 gap-2 sm:grid-cols-2 xl:max-w-xl xl:grid-cols-4">
+              {[
+                { label: "All", count: documents.length },
+                { label: "Notes", count: noteDocuments.length },
+                { label: "Links", count: linkDocuments.length },
+                { label: "Uploads", count: uploadDocuments.length }
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-xl border border-border bg-muted/55 px-3 py-2">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{stat.label}</div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">{stat.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <InputGroup className="h-10 xl:max-w-md">
+              <InputGroupAddon align="inline-start">
+                <InputGroupText>
+                  <Search className="size-4" />
+                </InputGroupText>
+              </InputGroupAddon>
+              <InputGroupInput
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search titles, content, URLs, and source types"
+              />
+            </InputGroup>
+
+            <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as LibraryFilter)}>
+              <TabsList variant="line" className="w-full justify-start xl:w-auto">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="note">Notes</TabsTrigger>
+                <TabsTrigger value="link">Links</TabsTrigger>
+                <TabsTrigger value="upload">Uploads</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(340px,1.05fr)]">
+            <div className="overflow-hidden rounded-[1.25rem] border border-border bg-muted/35">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+                  <LibraryBig className="size-4" />
+                  Results
+                </div>
+                <Badge variant="secondary">{filteredDocuments.length}</Badge>
+              </div>
+
+              {filteredDocuments.length === 0 ? (
+                <div className="px-6 py-10 text-center text-sm text-muted-foreground">
+                  No documents match this search yet.
+                </div>
+              ) : (
+                <ScrollArea className="h-[32rem]">
+                  <div className="grid gap-2 p-3">
+                    {filteredDocuments.map((document) => (
+                      <button
+                        key={document.id}
+                        type="button"
+                        onClick={() => setSelectedDocumentId(document.id)}
+                        className={cn(
+                          "w-full rounded-2xl border px-4 py-3 text-left transition-all",
+                          "hover:border-border hover:bg-background/70",
+                          selectedDocument?.id === document.id
+                            ? "border-blue-200 bg-background shadow-sm ring-1 ring-blue-100"
+                            : "border-transparent bg-background/50"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 space-y-2">
+                            <div className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                              <SectionIcon sourceType={document.sourceType} />
+                              {document.sourceType}
+                            </div>
+                            <div className="truncate text-sm font-semibold text-foreground">{document.title}</div>
+                            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+                              {summarizeText(fullDocumentText(document))}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right text-xs text-muted-foreground">
+                            <div>{formatCreatedAt(document.createdAt)}</div>
+                            {document.externalUrl ? <div className="mt-1">{extractHost(document.externalUrl)}</div> : null}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
+
+            <div className="overflow-hidden rounded-[1.5rem] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(246,248,251,0.96))] shadow-sm">
+              {selectedDocument ? (
+                <>
+                  <div className="border-b border-border px-5 py-4">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                          <SectionIcon sourceType={selectedDocument.sourceType} />
+                          {selectedDocument.sourceType}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-foreground">{selectedDocument.title}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Added {formatCreatedAt(selectedDocument.createdAt)}
+                            {selectedDocument.mimeType ? ` • ${selectedDocument.mimeType}` : ""}
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedDocument.externalUrl ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          render={
+                            <Link
+                              href={selectedDocument.externalUrl}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                            />
+                          }
+                        >
+                          <ExternalLink className="size-4" />
+                          Open source
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <ScrollArea className="h-[32rem]">
+                    <div className="space-y-4 px-5 py-4">
+                      {selectedDocument.externalUrl ? (
+                        <div className="rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                          Source:{" "}
+                          <Link
+                            href={selectedDocument.externalUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="font-medium text-foreground underline underline-offset-4"
+                          >
+                            {selectedDocument.externalUrl}
+                          </Link>
+                        </div>
+                      ) : null}
+
+                      <div className="rounded-2xl border border-border bg-background/65 px-4 py-4">
+                        <pre className="whitespace-pre-wrap break-words text-sm leading-7 text-foreground">
+                          {fullDocumentText(selectedDocument)}
+                        </pre>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </>
+              ) : (
+                <div className="flex h-[32rem] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+                  Select a document to preview its full content.
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </motion.section>
