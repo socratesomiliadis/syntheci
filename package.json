@@ -15,6 +15,7 @@
     "db:migrate": "dotenv -e .env -- pnpm --filter @syntheci/db db:migrate",
     "db:generate": "dotenv -e .env -- pnpm --filter @syntheci/db db:generate",
     "compose:up": "docker compose up --build",
+    "compose:dev": "docker compose up postgres redis minio minio-init -d --build",
     "compose:down": "docker compose down -v"
   },
   "devDependencies": {

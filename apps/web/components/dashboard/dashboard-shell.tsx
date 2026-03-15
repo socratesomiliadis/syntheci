@@ -4,8 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { Sparkles } from "lucide-react";
-
-import { dashboardNavItems, getDashboardPageMeta } from "@/components/dashboard/navigation";
+import { TextMorph } from "torph/react";
+import {
+  dashboardNavItems,
+  getDashboardPageMeta,
+} from "@/components/dashboard/navigation";
 import { SignOutButton } from "@/components/dashboard/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,7 +25,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarSeparator,
-  SidebarTrigger
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 interface DashboardShellProps {
@@ -36,7 +39,7 @@ export function DashboardShell({
   children,
   openThreadCount,
   workspaceName,
-  userEmail
+  userEmail,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const pageMeta = getDashboardPageMeta(pathname);
@@ -61,8 +64,12 @@ export function DashboardShell({
               Right now
             </p>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-semibold text-sidebar-foreground">{openThreadCount}</span>
-              <span className="text-xs text-sidebar-foreground/70">open threads</span>
+              <span className="text-2xl font-semibold text-sidebar-foreground">
+                {openThreadCount}
+              </span>
+              <span className="text-xs text-sidebar-foreground/70">
+                open threads
+              </span>
             </div>
           </div>
         </SidebarHeader>
@@ -106,7 +113,9 @@ export function DashboardShell({
 
         <SidebarFooter className="p-3">
           <div className="space-y-3 rounded-[1.15rem] border border-sidebar-border/80 bg-sidebar-accent/50 p-3">
-            <p className="truncate text-xs text-sidebar-foreground/80">{userEmail}</p>
+            <p className="truncate text-xs text-sidebar-foreground/80">
+              {userEmail}
+            </p>
             <SignOutButton />
           </div>
         </SidebarFooter>
@@ -118,20 +127,28 @@ export function DashboardShell({
             <div className="flex items-start gap-3">
               <SidebarTrigger className="mt-1" />
               <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                {/* <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
                   {pageMeta.eyebrow}
-                </p>
-                <div>
-                  <h1 className="text-xl font-semibold tracking-tight text-slate-950">
+                </p> */}
+                <div className="flex flex-col">
+                  <TextMorph
+                    as="h1"
+                    className="text-xl font-semibold tracking-tight text-slate-950"
+                  >
                     {pageMeta.title}
-                  </h1>
-                  <p className="text-sm text-slate-600">{pageMeta.description}</p>
+                  </TextMorph>
+                  <TextMorph as="p" className="text-sm text-slate-600">
+                    {pageMeta.description}
+                  </TextMorph>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-slate-300 bg-white/70 text-slate-600">
+              <Badge
+                variant="outline"
+                className="border-slate-300 bg-white/70 text-slate-600"
+              >
                 <Sparkles className="mr-1 size-3.5" />
                 AI workflow hub
               </Badge>
