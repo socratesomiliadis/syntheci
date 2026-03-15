@@ -7,6 +7,7 @@ import { env } from "./env";
 
 const globalForS3 = globalThis as unknown as {
   s3?: S3Client;
+  browserUploadSigner?: S3Client;
 };
 
 export const s3 =
@@ -21,8 +22,21 @@ export const s3 =
     }
   });
 
+export const browserUploadSigner =
+  globalForS3.browserUploadSigner ??
+  new S3Client({
+    region: env.MINIO_REGION,
+    endpoint: env.MINIO_PUBLIC_URL,
+    forcePathStyle: true,
+    credentials: {
+      accessKeyId: env.MINIO_ACCESS_KEY,
+      secretAccessKey: env.MINIO_SECRET_KEY
+    }
+  });
+
 if (process.env.NODE_ENV !== "production") {
   globalForS3.s3 = s3;
+  globalForS3.browserUploadSigner = browserUploadSigner;
 }
 
 export async function createUploadUrl(input: {
@@ -37,7 +51,7 @@ export async function createUploadUrl(input: {
     ContentType: input.contentType
   });
 
-  const uploadUrl = await getSignedUrl(s3, command, {
+  const uploadUrl = await getSignedUrl(browserUploadSigner, command, {
     expiresIn: 900
   });
 
