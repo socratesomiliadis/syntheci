@@ -57,3 +57,15 @@ describe("inferSourceTypesFromQuestion", () => {
     expect(inferSourceTypesFromQuestion("What should I focus on this week?")).toBeUndefined();
   });
 });
+
+describe("buildRetrievalQueryProfile", () => {
+  it("detects document-oriented synthesis questions", async () => {
+    const { buildRetrievalQueryProfile } = await import("./retrieval");
+
+    const profile = buildRetrievalQueryProfile("What should I send before the review?");
+
+    expect(profile.prefersDocuments).toBe(true);
+    expect(profile.needsMultipleEvidence).toBe(true);
+    expect(profile.expansionTokens.has("answers")).toBe(true);
+  });
+});
