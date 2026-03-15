@@ -15,6 +15,7 @@ vi.mock("@/lib/session", () => ({
 }));
 
 vi.mock("@syntheci/ai", () => ({
+  chatModelVersion: "test-model",
   classifyMessageTriage: mocks.classifyMessageTriageMock
 }));
 

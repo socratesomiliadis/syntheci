@@ -12,7 +12,10 @@ export const dynamic = "force-dynamic";
 export default async function ConnectorsPage() {
   const { workspaceId } = await requireWorkspaceContext();
   const connectors = await getConnectorStatus(workspaceId);
-  const latestSync = connectors[0]?.updatedAt ? new Date(connectors[0].updatedAt).toLocaleString() : "No sync yet";
+  const latestSync = connectors[0]?.updatedAt
+    ? new Date(connectors[0].updatedAt).toLocaleString()
+    : "No sync yet";
+  const hasDemoConnector = connectors.some((connector) => connector.demo);
 
   return (
     <main className="space-y-4 px-4 py-5 md:px-6 md:py-6">
@@ -39,12 +42,21 @@ export default async function ConnectorsPage() {
         <Card className="border-border/80 bg-card/90 shadow-sm xl:min-w-[22rem]">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-foreground">Workspace connections</CardTitle>
-            <CardDescription>Link Google once, then manage sync from the panel below.</CardDescription>
+            <CardDescription>
+              {hasDemoConnector
+                ? "This workspace ships with a seeded demo Google connection. Sync, send, and create actions are simulated so judges can review the full flow safely."
+                : "Link Google once, then manage sync from the panel below."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
-            <a href="/api/connect/google/start" className={cn(buttonVariants({ variant: "default" }), "rounded-xl")}>
-              Connect Google
-            </a>
+            {hasDemoConnector ? null : (
+              <a
+                href="/api/connect/google/start"
+                className={cn(buttonVariants({ variant: "default" }), "rounded-xl")}
+              >
+                Connect Google
+              </a>
+            )}
             <Link href="/dashboard/connectors" className={cn(buttonVariants({ variant: "outline" }), "rounded-xl")}>
               Refresh status
             </Link>

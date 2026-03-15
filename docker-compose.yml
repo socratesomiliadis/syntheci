@@ -52,6 +52,41 @@ services:
       mc anonymous set download local/syntheci-files || true
       "
 
+  bootstrap:
+    build:
+      context: .
+      dockerfile: ./apps/worker/Dockerfile
+    container_name: syntheci-bootstrap
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      DATABASE_URL: postgres://syntheci:syntheci@postgres:5432/syntheci
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-syntheci-files}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-replace-with-long-random-secret}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      DEMO_MODE_ENABLED: ${DEMO_MODE_ENABLED:-true}
+      DEMO_ACCOUNT_EMAIL: ${DEMO_ACCOUNT_EMAIL:-demo@syntheci.local}
+      DEMO_ACCOUNT_PASSWORD: ${DEMO_ACCOUNT_PASSWORD:-demo-password-123}
+      DEMO_ACCOUNT_NAME: ${DEMO_ACCOUNT_NAME:-Syntheci Demo}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-replace-me}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-replace-me}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-replace-me}
+      GOOGLE_EMBEDDING_MODEL: ${GOOGLE_EMBEDDING_MODEL:-gemini-embedding-001}
+      GROQ_API_KEY: ${GROQ_API_KEY:-replace-me}
+      GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-moonshotai/kimi-k2-instruct-0905}
+    command: ["pnpm", "--filter", "@syntheci/worker", "bootstrap:demo"]
+
   web:
     build:
       context: .
@@ -65,6 +100,8 @@ services:
       redis:
         condition: service_started
       minio-init:
+        condition: service_completed_successfully
+      bootstrap:
         condition: service_completed_successfully
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -80,6 +117,10 @@ services:
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-replace-with-long-random-secret}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      DEMO_MODE_ENABLED: ${DEMO_MODE_ENABLED:-true}
+      DEMO_ACCOUNT_EMAIL: ${DEMO_ACCOUNT_EMAIL:-demo@syntheci.local}
+      DEMO_ACCOUNT_PASSWORD: ${DEMO_ACCOUNT_PASSWORD:-demo-password-123}
+      DEMO_ACCOUNT_NAME: ${DEMO_ACCOUNT_NAME:-Syntheci Demo}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-replace-me}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-replace-me}
       GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-replace-me}
@@ -101,6 +142,8 @@ services:
         condition: service_started
       minio-init:
         condition: service_completed_successfully
+      bootstrap:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
@@ -112,6 +155,11 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-syntheci-files}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-replace-with-long-random-secret}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      DEMO_MODE_ENABLED: ${DEMO_MODE_ENABLED:-true}
+      DEMO_ACCOUNT_EMAIL: ${DEMO_ACCOUNT_EMAIL:-demo@syntheci.local}
+      DEMO_ACCOUNT_PASSWORD: ${DEMO_ACCOUNT_PASSWORD:-demo-password-123}
+      DEMO_ACCOUNT_NAME: ${DEMO_ACCOUNT_NAME:-Syntheci Demo}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-replace-me}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-replace-me}
       GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-replace-me}

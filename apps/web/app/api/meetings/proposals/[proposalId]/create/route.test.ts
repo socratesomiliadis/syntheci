@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireWorkspaceContextMock: vi.fn(),
   decryptSecretMock: vi.fn(),
   createCalendarEventMock: vi.fn(),
+  isDemoConnectedAccountMock: vi.fn(),
   proposalFindFirstMock: vi.fn(),
   messageFindFirstMock: vi.fn(),
   sourceFindFirstMock: vi.fn(),
@@ -24,6 +25,10 @@ vi.mock("@/lib/crypto", () => ({
 
 vi.mock("@/lib/google", () => ({
   createCalendarEvent: mocks.createCalendarEventMock
+}));
+
+vi.mock("@/lib/demo", () => ({
+  isDemoConnectedAccount: mocks.isDemoConnectedAccountMock
 }));
 
 vi.mock("@syntheci/db", () => ({
@@ -72,6 +77,7 @@ describe("POST /api/meetings/proposals/[proposalId]/create", () => {
     mocks.requireWorkspaceContextMock.mockResolvedValue({
       workspaceId: "workspace-1"
     });
+    mocks.isDemoConnectedAccountMock.mockReturnValue(false);
     mocks.decryptSecretMock.mockReturnValue("token");
     mocks.createCalendarEventMock.mockResolvedValue({
       id: "event-1"
@@ -163,5 +169,62 @@ describe("POST /api/meetings/proposals/[proposalId]/create", () => {
       externalEventId: "event-1"
     });
     expect(mocks.createCalendarEventMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("simulates meeting creation for demo connectors", async () => {
+    mocks.proposalFindFirstMock.mockResolvedValue({
+      id: "proposal-1",
+      workspaceId: "workspace-1",
+      sourceMessageId: "message-1",
+      status: "approved",
+      title: "Launch Sync",
+      description: "Discuss launch blockers",
+      startsAt: new Date("2026-03-09T10:00:00.000Z"),
+      endsAt: new Date("2026-03-09T10:30:00.000Z"),
+      attendees: ["alex@example.com"],
+      timezone: "Europe/Athens"
+    });
+    mocks.messageFindFirstMock.mockResolvedValue({
+      id: "message-1",
+      sourceId: "source-1"
+    });
+    mocks.sourceFindFirstMock.mockResolvedValue({
+      id: "source-1",
+      connectedAccountId: "account-1"
+    });
+    mocks.accountFindFirstMock.mockResolvedValue({
+      id: "account-1",
+      provider: "google",
+      metadata: {
+        demo: true
+      }
+    });
+    mocks.isDemoConnectedAccountMock.mockReturnValue(true);
+    mocks.returningMock.mockResolvedValue([
+      {
+        id: "proposal-1",
+        status: "created",
+        externalEventId: "demo-created-proposal-1"
+      }
+    ]);
+
+    const response = await POST(
+      new Request("http://localhost/api/meetings/proposals/proposal-1/create", {
+        method: "POST"
+      }) as never,
+      {
+        params: Promise.resolve({
+          proposalId: "proposal-1"
+        })
+      }
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      id: "proposal-1",
+      status: "created",
+      externalEventId: "demo-created-proposal-1"
+    });
+    expect(mocks.createCalendarEventMock).not.toHaveBeenCalled();
   });
 });

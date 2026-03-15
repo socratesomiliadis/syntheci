@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { connectedAccounts, db } from "@syntheci/db";
 import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
 
+import { importNextDemoSyncBatch, isDemoConnectedAccount } from "@/lib/demo";
 import { buildIdempotencyKey } from "@/lib/idempotency";
 import { upsertJobAudit } from "@/lib/jobs-audit";
 import { enqueueJob, ingestionQueue } from "@/lib/queue";
@@ -21,7 +22,22 @@ export async function POST() {
   }
 
   const queuedAt = Date.now();
+  let queued = 0;
+  let imported = 0;
+  let importedBatchId: string | null = null;
+
   for (const account of googleAccounts) {
+    if (isDemoConnectedAccount(account)) {
+      const demoResult = await importNextDemoSyncBatch({
+        workspaceId,
+        connectedAccountId: account.id
+      });
+
+      imported += demoResult.importedCount;
+      importedBatchId = demoResult.batchId;
+      continue;
+    }
+
     const idempotencyKey = buildIdempotencyKey(
       "gmail-manual-sync",
       workspaceId,
@@ -51,10 +67,14 @@ export async function POST() {
         reason: "manual_sync"
       }
     });
+
+    queued += 1;
   }
 
   return NextResponse.json({
     ok: true,
-    queued: googleAccounts.length
+    queued,
+    imported,
+    batchId: importedBatchId
   });
 }

@@ -10,6 +10,7 @@ import {
 } from "@syntheci/db";
 
 import { decryptSecret } from "@/lib/crypto";
+import { isDemoConnectedAccount } from "@/lib/demo";
 import { sendGmailReply } from "@/lib/google";
 import { requireWorkspaceContext } from "@/lib/session";
 
@@ -60,6 +61,24 @@ export async function POST(
   }
 
   try {
+    if (isDemoConnectedAccount(account)) {
+      const [updated] = await db
+        .update(draftReplies)
+        .set({
+          status: "sent",
+          sentAt: new Date(),
+          errorMessage: null,
+          updatedAt: new Date()
+        })
+        .where(eq(draftReplies.id, draft.id))
+        .returning({
+          id: draftReplies.id,
+          status: draftReplies.status
+        });
+
+      return NextResponse.json(updated);
+    }
+
     const accessToken = decryptSecret(account.accessTokenCiphertext);
     const refreshToken = account.refreshTokenCiphertext
       ? decryptSecret(account.refreshTokenCiphertext)

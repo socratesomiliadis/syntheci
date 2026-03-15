@@ -22,12 +22,15 @@ import { cn } from "@/lib/utils";
 interface ConnectorStatus {
   id: string;
   provider: string;
+  label: string;
   scopes: string[];
   updatedAt: Date;
+  demo: boolean;
 }
 
 export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] }) {
   const [isSyncing, setIsSyncing] = useState(false);
+  const hasDemoConnector = connectors.some((connector) => connector.demo);
 
   async function syncGmail() {
     setIsSyncing(true);
@@ -43,7 +46,23 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
 
       const payload = (await response.json()) as {
         queued: number;
+        imported?: number;
+        batchId?: string | null;
       };
+
+      if (payload.imported && payload.imported > 0) {
+        toast.success(
+          payload.imported === 1
+            ? "Demo sync imported 1 new email."
+            : `Demo sync imported ${payload.imported} new emails.`
+        );
+        return;
+      }
+
+      if (hasDemoConnector && payload.queued === 0) {
+        toast.success("No demo sync batches remain to import.");
+        return;
+      }
 
       toast.success(
         payload.queued === 1
@@ -64,10 +83,14 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-lg">Connectors</CardTitle>
             <Badge variant="secondary" className="tone-info">
-              Google
+              {hasDemoConnector ? "Demo Google" : "Google"}
             </Badge>
           </div>
-          <CardDescription>Connect Gmail and Calendar to keep the workspace synced.</CardDescription>
+          <CardDescription>
+            {hasDemoConnector
+              ? "This workspace uses a seeded Google demo connector. Manual sync imports fixture emails and downstream actions are simulated."
+              : "Connect Gmail and Calendar to keep the workspace synced."}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -94,20 +117,22 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <a
-              href="/api/connect/google/start"
-              className={cn(buttonVariants({ variant: "default" }), "inline-flex")}
-            >
-              <Link2 className="mr-2 size-4" />
-              Connect Gmail/Calendar
-            </a>
+            {hasDemoConnector ? null : (
+              <a
+                href="/api/connect/google/start"
+                className={cn(buttonVariants({ variant: "default" }), "inline-flex")}
+              >
+                <Link2 className="mr-2 size-4" />
+                Connect Gmail/Calendar
+              </a>
+            )}
             <Button type="button" variant="outline" onClick={() => void syncGmail()} disabled={isSyncing}>
               {isSyncing ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
                 <RefreshCw className="mr-2 size-4" />
               )}
-              Sync Gmail Now
+              {hasDemoConnector ? "Import demo email batch" : "Sync Gmail Now"}
             </Button>
           </div>
 
@@ -139,7 +164,14 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
                       transition={withStagger(index)}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="font-medium text-foreground">{connector.provider}</p>
+                        <div className="space-y-1">
+                          <p className="font-medium text-foreground">{connector.label}</p>
+                          {connector.demo ? (
+                            <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                              Simulated connector
+                            </p>
+                          ) : null}
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           Updated {new Date(connector.updatedAt).toLocaleString()}
                         </span>

@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { db, briefings, connectedAccounts, messages, triageResults } from "@syntheci/db";
-import { TRIAGE_WEIGHT } from "@syntheci/shared";
+import { TRIAGE_WEIGHT, isDemoConnectedAccountMetadata } from "@syntheci/shared";
 
 export async function getConnectorStatus(workspaceId: string) {
   const rows = await db.query.connectedAccounts.findMany({
@@ -10,12 +10,24 @@ export async function getConnectorStatus(workspaceId: string) {
       id: true,
       provider: true,
       scopes: true,
-      updatedAt: true
+      updatedAt: true,
+      metadata: true
     },
     orderBy: [desc(connectedAccounts.updatedAt)]
   });
 
-  return rows;
+  return rows.map((row) => {
+    const demoMetadata = isDemoConnectedAccountMetadata(row.metadata) ? row.metadata : null;
+
+    return {
+      id: row.id,
+      provider: row.provider,
+      scopes: row.scopes,
+      updatedAt: row.updatedAt,
+      demo: Boolean(demoMetadata),
+      label: demoMetadata?.label ?? row.provider
+    };
+  });
 }
 
 export async function getPriorityInbox(workspaceId: string) {

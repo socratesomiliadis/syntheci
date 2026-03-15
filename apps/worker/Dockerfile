@@ -3,7 +3,7 @@ FROM node:22-alpine
 RUN corepack enable
 WORKDIR /app
 
-COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/worker/package.json ./apps/worker/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
@@ -12,6 +12,9 @@ COPY packages/ai/package.json ./packages/ai/package.json
 
 RUN pnpm install --frozen-lockfile=false
 
-COPY . .
+COPY apps/worker ./apps/worker
+COPY packages/shared ./packages/shared
+COPY packages/db ./packages/db
+COPY packages/ai ./packages/ai
 
 CMD ["pnpm", "--filter", "@syntheci/worker", "start"]

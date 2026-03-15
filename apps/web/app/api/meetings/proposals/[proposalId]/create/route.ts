@@ -10,6 +10,7 @@ import {
 } from "@syntheci/db";
 
 import { decryptSecret } from "@/lib/crypto";
+import { isDemoConnectedAccount } from "@/lib/demo";
 import { createCalendarEvent } from "@/lib/google";
 import { requireWorkspaceContext } from "@/lib/session";
 
@@ -67,6 +68,24 @@ export async function POST(
   });
   if (!account) {
     return NextResponse.json({ error: "google connector not found" }, { status: 404 });
+  }
+
+  if (isDemoConnectedAccount(account)) {
+    const [updated] = await db
+      .update(meetingProposals)
+      .set({
+        status: "created",
+        externalEventId: `demo-created-${proposal.id}`,
+        updatedAt: new Date()
+      })
+      .where(eq(meetingProposals.id, proposal.id))
+      .returning({
+        id: meetingProposals.id,
+        status: meetingProposals.status,
+        externalEventId: meetingProposals.externalEventId
+      });
+
+    return NextResponse.json(updated);
   }
 
   const accessToken = decryptSecret(account.accessTokenCiphertext);

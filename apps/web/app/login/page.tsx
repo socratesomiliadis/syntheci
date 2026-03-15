@@ -2,9 +2,11 @@ import Link from "next/link";
 
 import { Sparkles } from "lucide-react";
 
+import { DemoSignInButton } from "@/components/auth/demo-signin-button";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { env } from "@/lib/env";
 import { getOptionalSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +60,20 @@ export default async function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <GoogleSignInButton />
+            {env.DEMO_MODE_ENABLED ? (
+              <div className="space-y-3 rounded-xl border border-border/80 bg-muted/55 p-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">Judge review path</p>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the seeded demo workspace without connecting a real Google account.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Demo email: <span className="font-medium text-foreground">{env.DEMO_ACCOUNT_EMAIL}</span>
+                  </p>
+                </div>
+                <DemoSignInButton />
+              </div>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               By continuing, you authorize the Google-based workspace flows used by the app.
             </p>

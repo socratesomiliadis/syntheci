@@ -87,17 +87,21 @@ export function SidebarAccountPopover({
         </div>
 
         <div className="mt-2 space-y-1">
-          <Button asChild variant="ghost" className="w-full justify-start rounded-xl">
-            <Link href="/dashboard">
-              <LayoutDashboard className="size-4" />
-              Overview
-            </Link>
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl"
+            render={<Link href="/dashboard" />}
+          >
+            <LayoutDashboard className="size-4" />
+            Overview
           </Button>
-          <Button asChild variant="ghost" className="w-full justify-start rounded-xl">
-            <Link href="/dashboard/inbox">
-              <Inbox className="size-4" />
-              Priority inbox
-            </Link>
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl"
+            render={<Link href="/dashboard/inbox" />}
+          >
+            <Inbox className="size-4" />
+            Priority inbox
           </Button>
           <Button
             type="button"

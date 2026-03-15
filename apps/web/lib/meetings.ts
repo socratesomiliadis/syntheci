@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { contacts, connectedAccounts, db, meetingProposals } from "@syntheci/db";
-import type { MeetingProposalStatus } from "@syntheci/shared";
+import { isDemoConnectedAccountMetadata, type MeetingProposalStatus } from "@syntheci/shared";
 
 import { decryptSecret } from "./crypto";
 import { listCalendarEvents } from "./google";
@@ -48,6 +48,10 @@ export interface MeetingCalendarFeed {
 }
 
 function getConnectedAccountLabel(metadata: unknown, externalAccountId: string) {
+  if (isDemoConnectedAccountMetadata(metadata)) {
+    return metadata.label;
+  }
+
   if (metadata && typeof metadata === "object") {
     const email = (metadata as Record<string, unknown>).email;
     if (typeof email === "string" && email.length > 0) {
@@ -188,6 +192,32 @@ export async function getMeetingCalendarFeed(input: {
 
   const settledEvents = await Promise.allSettled(
     accounts.map(async (account) => {
+      const demoMetadata = isDemoConnectedAccountMetadata(account.metadata)
+        ? account.metadata
+        : null;
+
+      if (demoMetadata) {
+        return demoMetadata.seededCalendarItems
+          .filter((item) => !createdEventIds.has(item.id))
+          .filter((item) => {
+            const startsAt = new Date(item.startsAt);
+            const endsAt = new Date(item.endsAt);
+            return startsAt < input.rangeEnd && endsAt > input.rangeStart;
+          })
+          .map((item) => ({
+            id: `google:${item.id}`,
+            title: item.title,
+            startsAt: item.startsAt,
+            endsAt: item.endsAt,
+            timezone: item.timezone,
+            attendees: item.attendees,
+            source: "google" as const,
+            sourceLabel: demoMetadata.label,
+            externalUrl: item.externalUrl ?? null,
+            isAllDay: item.isAllDay ?? false
+          }));
+      }
+
       const accessToken = decryptSecret(account.accessTokenCiphertext);
       const refreshToken = account.refreshTokenCiphertext
         ? decryptSecret(account.refreshTokenCiphertext)
