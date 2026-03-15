@@ -2,7 +2,7 @@ import crypto, { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { and, eq, inArray } from "drizzle-orm";
@@ -47,6 +47,8 @@ import {
   demoWorkspaceTimezone,
   type DemoReferenceFixture
 } from "@syntheci/shared";
+
+import { ensureBucketExists, minioBucket, objectStorage } from "./services/storage";
 
 const env = {
   BETTER_AUTH_SECRET:
@@ -218,16 +220,6 @@ const demoScopes = [
   "https://www.googleapis.com/auth/gmail.modify",
   "https://www.googleapis.com/auth/calendar.events"
 ];
-
-const s3 = new S3Client({
-  region: process.env.MINIO_REGION ?? "us-east-1",
-  endpoint: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
-  forcePathStyle: true,
-  credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY ?? "minioadmin",
-    secretAccessKey: process.env.MINIO_SECRET_KEY ?? "minioadmin"
-  }
-});
 
 interface SeededMessageRecord {
   id: string;
@@ -488,9 +480,9 @@ async function indexMessageText(input: {
 }
 
 async function uploadDemoAsset(objectKey: string, body: string, contentType: string) {
-  await s3.send(
+  await objectStorage.send(
     new PutObjectCommand({
-      Bucket: process.env.MINIO_BUCKET ?? "syntheci-files",
+      Bucket: minioBucket,
       Key: objectKey,
       Body: body,
       ContentType: contentType
@@ -499,7 +491,7 @@ async function uploadDemoAsset(objectKey: string, body: string, contentType: str
 }
 
 function buildUploadPublicUrl(objectKey: string) {
-  return `${process.env.MINIO_PUBLIC_URL ?? "http://localhost:9000"}/${process.env.MINIO_BUCKET ?? "syntheci-files"}/${objectKey}`;
+  return `${process.env.MINIO_PUBLIC_URL ?? "http://localhost:9000"}/${minioBucket}/${objectKey}`;
 }
 
 function citationSnippet(text: string) {
@@ -987,6 +979,7 @@ export async function bootstrapDemoWorkspace() {
     return null;
   }
 
+  await ensureBucketExists();
   await ensureBootstrapSchema();
   const demoUser = await ensureDemoAuthUser();
   const workspaceId = await resetDemoWorkspace(demoUser.id);

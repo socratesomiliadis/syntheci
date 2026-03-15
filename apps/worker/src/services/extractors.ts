@@ -1,17 +1,9 @@
 import { Readability } from "@mozilla/readability";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { JSDOM } from "jsdom";
 import pdfParse from "pdf-parse";
 
-const s3 = new S3Client({
-  region: process.env.MINIO_REGION ?? "us-east-1",
-  endpoint: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
-  forcePathStyle: true,
-  credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY ?? "minioadmin",
-    secretAccessKey: process.env.MINIO_SECRET_KEY ?? "minioadmin"
-  }
-});
+import { minioBucket, objectStorage } from "./storage";
 
 async function streamToBuffer(stream: ReadableStream<Uint8Array> | NodeJS.ReadableStream) {
   if ("getReader" in stream) {
@@ -36,9 +28,9 @@ export async function extractTextFromObject(input: {
   objectKey: string;
   mimeType: string | null;
 }) {
-  const response = await s3.send(
+  const response = await objectStorage.send(
     new GetObjectCommand({
-      Bucket: process.env.MINIO_BUCKET ?? "syntheci-files",
+      Bucket: minioBucket,
       Key: input.objectKey
     })
   );

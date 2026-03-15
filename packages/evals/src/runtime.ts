@@ -1,7 +1,6 @@
 import { createRequire } from "node:module";
 import { performance } from "node:perf_hooks";
 
-import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -29,6 +28,7 @@ import type { retrieveContextChunks as retrieveContextChunksType } from "../../.
 import type { importNextDemoSyncBatch as importNextDemoSyncBatchType } from "../../../apps/web/lib/demo.ts";
 import type { BootstrapDemoSeedResult } from "../../../apps/worker/src/bootstrap-demo.ts";
 import type { buildBriefingInput as buildBriefingInputType } from "../../../apps/worker/src/services/briefing.ts";
+import type { ensureBucketExists as ensureBucketExistsType } from "../../../apps/worker/src/services/storage.ts";
 
 import {
   BENCHMARK_DATASET_NAME,
@@ -82,6 +82,9 @@ const { importNextDemoSyncBatch } = require("../../../apps/web/lib/demo.ts") as 
 };
 const { bootstrapDemoWorkspace } = require("../../../apps/worker/src/bootstrap-demo.ts") as {
   bootstrapDemoWorkspace: () => Promise<BootstrapDemoSeedResult | null>;
+};
+const { ensureBucketExists } = require("../../../apps/worker/src/services/storage.ts") as {
+  ensureBucketExists: typeof ensureBucketExistsType;
 };
 const { buildBriefingInput } = require("../../../apps/worker/src/services/briefing.ts") as {
   buildBriefingInput: typeof buildBriefingInputType;
@@ -237,23 +240,7 @@ export async function verifyBenchmarkEnvironment() {
   resolveEnv("GOOGLE_GENERATIVE_AI_API_KEY");
   resolveEnv("BETTER_AUTH_SECRET");
   resolveEnv("DATABASE_URL");
-
-  const bucket = process.env.MINIO_BUCKET ?? "syntheci-files";
-  const s3 = new S3Client({
-    region: process.env.MINIO_REGION ?? "us-east-1",
-    endpoint: process.env.MINIO_ENDPOINT ?? "http://localhost:9000",
-    forcePathStyle: true,
-    credentials: {
-      accessKeyId: process.env.MINIO_ACCESS_KEY ?? "minioadmin",
-      secretAccessKey: process.env.MINIO_SECRET_KEY ?? "minioadmin"
-    }
-  });
-
-  await s3.send(
-    new HeadBucketCommand({
-      Bucket: bucket
-    })
-  );
+  await ensureBucketExists();
 }
 
 export async function reseedBenchmarkWorkspace() {
