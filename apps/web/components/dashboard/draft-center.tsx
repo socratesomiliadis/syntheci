@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import type { DraftReplyStatus } from "@syntheci/shared";
 
@@ -32,12 +33,9 @@ interface DraftItem {
 export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
   const [drafts, setDrafts] = useState(initialDrafts);
   const [busyDraftId, setBusyDraftId] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
 
   async function updateDraft(draftId: string, action: "approve" | "send") {
     setBusyDraftId(draftId);
-    setStatus(null);
     try {
       const response = await fetch(`/api/drafts/${draftId}/${action}`, {
         method: "POST"
@@ -47,11 +45,9 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
       setDrafts((prev) =>
         prev.map((draft) => (draft.id === draftId ? { ...draft, status: payload.status } : draft))
       );
-      setStatusTone("success");
-      setStatus(`Draft ${action}d successfully.`);
+      toast.success(`Draft ${action}d successfully.`);
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : `${action} failed`);
+      toast.error(error instanceof Error ? error.message : `${action} failed`);
     } finally {
       setBusyDraftId(null);
     }
@@ -71,27 +67,6 @@ export function DraftCenter({ initialDrafts }: { initialDrafts: DraftItem[] }) {
         </CardHeader>
 
         <CardContent className="space-y-3">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {status ? (
-              <motion.p
-                key={`draft-status-${statusTone}-${status}`}
-                layout
-                className={
-                  statusTone === "error"
-                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
-                    : "rounded-lg tone-success px-3 py-2 text-sm"
-                }
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={statusReveal}
-                transition={statusTransition}
-              >
-                {status}
-              </motion.p>
-            ) : null}
-          </AnimatePresence>
-
           <AnimatePresence mode="popLayout" initial={false}>
             {drafts.length === 0 ? (
               <motion.p

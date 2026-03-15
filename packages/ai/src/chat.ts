@@ -1,9 +1,10 @@
-import { embed, generateText, streamText, type ModelMessage } from "ai";
+import { generateText, streamText, type ModelMessage } from "ai";
 import { z } from "zod";
 
 import { chatAnswerSchema, sourceTypeSchema } from "@syntheci/shared";
 
-import { chatModel, embeddingModel } from "./client";
+import { chatModel } from "./client";
+import { embedText } from "./embeddings";
 import { SYSTEM_PROMPT } from "./prompts";
 
 const retrievalChunkSchema = z.object({
@@ -25,11 +26,7 @@ const streamChatInputSchema = chatInputSchema.extend({
 });
 
 export async function embedQuery(query: string) {
-  const { embedding } = await embed({
-    model: embeddingModel,
-    value: query
-  });
-  return embedding;
+  return embedText(query);
 }
 
 function buildContext(chunks: z.infer<typeof retrievalChunkSchema>[]) {

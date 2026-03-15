@@ -9,6 +9,7 @@ Syntheci is a hackathon MVP for an AI knowledge base / second brain system:
 - MinIO file storage
 - Redis + BullMQ background jobs
 - AI SDK chat + triage + daily briefing + draft replies + meeting proposals
+- Groq + Moonshot Kimi for text/object generation, Google for embeddings
 
 ## Monorepo Structure
 

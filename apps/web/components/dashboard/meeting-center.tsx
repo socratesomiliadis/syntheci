@@ -13,6 +13,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import type { MeetingProposalStatus } from "@syntheci/shared";
 
@@ -181,8 +182,6 @@ export function MeetingCenter({
   const [monthKey, setMonthKey] = useState(initialMonth);
   const [selectedDateKey, setSelectedDateKey] = useState(createInitialSelectedDate(initialMonth));
   const [busyProposalId, setBusyProposalId] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [calendarStatus, setCalendarStatus] = useState<string | null>(initialCalendarFeed.error);
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [editStartsAt, setEditStartsAt] = useState("");
@@ -252,7 +251,6 @@ export function MeetingCenter({
     setEditingProposalId(proposal.id);
     setEditStartsAt(toDateTimeLocalValue(proposal.startsAt));
     setEditEndsAt(toDateTimeLocalValue(proposal.endsAt));
-    setStatus(null);
   }
 
   function closeEditor() {
@@ -263,13 +261,11 @@ export function MeetingCenter({
 
   async function saveProposalTiming(proposal: MeetingProposalItem) {
     if (!editStartsAt || !editEndsAt) {
-      setStatusTone("error");
-      setStatus("Start and end time are required.");
+      toast.error("Start and end time are required.");
       return;
     }
 
     setBusyProposalId(proposal.id);
-    setStatus(null);
 
     try {
       const response = await fetch(`/api/meetings/proposals/${proposal.id}`, {
@@ -305,13 +301,11 @@ export function MeetingCenter({
             : current
         )
       );
-      setStatusTone("success");
-      setStatus("Proposal timing updated.");
+      toast.success("Proposal timing updated.");
       closeEditor();
       void refreshCalendar();
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "timing update failed");
+      toast.error(error instanceof Error ? error.message : "timing update failed");
     } finally {
       setBusyProposalId(null);
     }
@@ -319,7 +313,6 @@ export function MeetingCenter({
 
   async function updateProposal(proposalId: string, action: "approve" | "create") {
     setBusyProposalId(proposalId);
-    setStatus(null);
 
     try {
       const response = await fetch(`/api/meetings/proposals/${proposalId}/${action}`, {
@@ -346,12 +339,10 @@ export function MeetingCenter({
             : proposal
         )
       );
-      setStatusTone("success");
-      setStatus(`Proposal ${action}d successfully.`);
+      toast.success(`Proposal ${action}d successfully.`);
       void refreshCalendar();
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : `${action} failed`);
+      toast.error(error instanceof Error ? error.message : `${action} failed`);
     } finally {
       setBusyProposalId(null);
     }
@@ -636,27 +627,6 @@ export function MeetingCenter({
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {status ? (
-                  <motion.p
-                    key={`meeting-status-${statusTone}-${status}`}
-                    layout
-                    className={
-                      statusTone === "error"
-                        ? "rounded-lg tone-danger px-3 py-2 text-sm"
-                        : "rounded-lg tone-success px-3 py-2 text-sm"
-                    }
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={statusReveal}
-                    transition={statusTransition}
-                  >
-                    {status}
-                  </motion.p>
-                ) : null}
-              </AnimatePresence>
-
               <AnimatePresence mode="popLayout" initial={false}>
                 {proposals.length === 0 ? (
                   <motion.p

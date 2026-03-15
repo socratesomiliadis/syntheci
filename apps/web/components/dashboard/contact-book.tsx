@@ -12,6 +12,7 @@ import {
   UserRoundSearch
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import {
   listItemReveal,
@@ -127,8 +128,6 @@ export function ContactBook({
         : emptyDraft()
   );
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [isSaving, setIsSaving] = useState(false);
 
   const deferredQuery = useDeferredValue(query);
@@ -168,7 +167,6 @@ export function ContactBook({
 
   async function saveContact() {
     setIsSaving(true);
-    setStatus(null);
 
     try {
       const response = await fetch(
@@ -184,11 +182,9 @@ export function ContactBook({
 
       const payload = await readJson<{ contact: ContactBookItem }>(response);
       await refreshContacts(payload.contact.id);
-      setStatusTone("success");
-      setStatus(mode === "create" ? "Contact created." : "Contact updated.");
+      toast.success(mode === "create" ? "Contact created." : "Contact updated.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Unable to save contact.");
+      toast.error(error instanceof Error ? error.message : "Unable to save contact.");
     } finally {
       setIsSaving(false);
     }
@@ -198,13 +194,11 @@ export function ContactBook({
     setMode("create");
     setSelectedContactId(null);
     setDraft(emptyDraft());
-    setStatus(null);
   }
 
   function selectContact(contactId: string) {
     setMode("edit");
     setSelectedContactId(contactId);
-    setStatus(null);
   }
 
   const filteredContacts = contacts.filter((contact) => {
@@ -400,27 +394,6 @@ export function ContactBook({
             </CardHeader>
 
             <CardContent className="space-y-5 pt-5">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {status ? (
-                  <motion.p
-                    key={`${statusTone}-${status}`}
-                    layout
-                    className={
-                      statusTone === "error"
-                        ? "rounded-xl tone-danger px-4 py-3 text-sm"
-                        : "rounded-xl tone-success px-4 py-3 text-sm"
-                    }
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={statusReveal}
-                    transition={statusTransition}
-                  >
-                    {status}
-                  </motion.p>
-                ) : null}
-              </AnimatePresence>
-
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="contact-name">Name</Label>
@@ -537,7 +510,6 @@ export function ContactBook({
                     } else {
                       setDraft(emptyDraft());
                     }
-                    setStatus(null);
                   }}
                   disabled={isSaving}
                 >

@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { Worker, type Job } from "bullmq";
 
+import { chatModelVersion } from "@syntheci/ai";
 import { db, documents, messages, triageResults } from "@syntheci/db";
 import { JOB_NAMES, QUEUE_NAMES } from "@syntheci/shared";
 
@@ -194,7 +195,7 @@ function processTriageJob(job: Job) {
           | "informational",
         confidence: data.confidence,
         rationale: data.rationale,
-        modelVersion: process.env.OPENAI_CHAT_MODEL ?? "gpt-4.1-mini"
+        modelVersion: chatModelVersion
       })
       .onConflictDoUpdate({
         target: triageResults.messageId,
@@ -207,6 +208,7 @@ function processTriageJob(job: Job) {
             | "informational",
           confidence: data.confidence,
           rationale: data.rationale,
+          modelVersion: chatModelVersion,
           updatedAt: new Date()
         }
       });

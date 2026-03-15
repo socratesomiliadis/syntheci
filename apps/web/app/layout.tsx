@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Geist } from "next/font/google";
 
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -25,7 +26,10 @@ export default function RootLayout({
       className={cn("font-sans", geist.variable)}
     >
       <body className="min-h-svh bg-background text-foreground antialiased">
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          {children}
+          <Toaster richColors position="bottom-right" />
+        </TooltipProvider>
       </body>
     </html>
   );

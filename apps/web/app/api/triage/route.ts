@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { classifyMessageTriage } from "@syntheci/ai";
+import { chatModelVersion, classifyMessageTriage } from "@syntheci/ai";
 import { db, messages, triageResults } from "@syntheci/db";
 
 import { requireWorkspaceContext } from "@/lib/session";
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       label: triage.label,
       confidence: triage.confidence,
       rationale: triage.rationale,
-      modelVersion: process.env.OPENAI_CHAT_MODEL ?? "gpt-4.1-mini"
+      modelVersion: chatModelVersion
     })
     .onConflictDoUpdate({
       target: triageResults.messageId,
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         label: triage.label,
         confidence: triage.confidence,
         rationale: triage.rationale,
-        modelVersion: process.env.OPENAI_CHAT_MODEL ?? "gpt-4.1-mini",
+        modelVersion: chatModelVersion,
         updatedAt: new Date()
       }
     })

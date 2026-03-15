@@ -16,6 +16,7 @@ import {
   Trash2
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import type { ChatConversationDetail, ChatConversationSummary, ChatCitation, SourceType } from "@syntheci/shared";
 
@@ -42,11 +43,8 @@ import {
   statusTransition,
   withStagger
 } from "@/components/dashboard/motion-presets";
-import { toUIMessage, type ChatMessage } from "@/lib/chat-ui";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -55,6 +53,8 @@ import {
   SheetTitle,
   SheetTrigger
 } from "@/components/ui/sheet";
+import { toUIMessage, type ChatMessage } from "@/lib/chat-ui";
+import { cn } from "@/lib/utils";
 
 const sourceOptions: SourceType[] = ["gmail", "note", "upload", "link", "contact"];
 
@@ -115,112 +115,129 @@ function ConversationList({
   onCreateConversation: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-border/80 px-4 py-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-            Chat history
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">Private threads for this user.</p>
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="border-b border-border/80 px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              Chat history
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {conversations.length === 0
+                ? "No saved threads yet."
+                : `${conversations.length} saved conversation${conversations.length === 1 ? "" : "s"}.`}
+            </p>
+          </div>
+          <Button size="sm" className="rounded-xl" onClick={onCreateConversation}>
+            <MessageSquarePlus className="size-3.5" />
+            New chat
+          </Button>
         </div>
-        <Button size="sm" className="rounded-xl" onClick={onCreateConversation}>
-          <MessageSquarePlus className="size-3.5" />
-          New chat
-        </Button>
       </div>
 
-      <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
-        {conversations.length === 0 ? (
-          <div className="rounded-[1.05rem] border border-dashed border-border bg-muted/80 px-4 py-6 text-sm text-muted-foreground">
-            No saved chats yet. Start a conversation to build your history.
-          </div>
-        ) : (
-          conversations.map((conversation, index) => {
-            const isActive = conversation.id === activeConversationId;
-            const isEditing = editingConversationId === conversation.id;
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+        <AnimatePresence mode="popLayout" initial={false}>
+          {conversations.length === 0 ? (
+            <motion.div
+              key="chat-rail-empty"
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={statusReveal}
+              transition={statusTransition}
+              className="rounded-[1rem] border border-dashed border-border bg-background px-4 py-6 text-sm text-muted-foreground"
+            >
+              Start a conversation to build your saved chat history.
+            </motion.div>
+          ) : (
+            conversations.map((conversation, index) => {
+              const isActive = conversation.id === activeConversationId;
+              const isEditing = editingConversationId === conversation.id;
 
-            return (
-              <motion.article
-                key={conversation.id}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={listItemReveal}
-                transition={withStagger(index, 0.03)}
-                className={cn(
-                  "rounded-[1.05rem] border px-3 py-3 transition-colors",
-                  isActive
-                    ? "border-info/25 bg-info/10 shadow-sm"
-                    : "border-border/80 bg-card/80 hover:bg-muted"
-                )}
-              >
-                {isEditing ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={editingTitle}
-                      onChange={(event) => onEditingTitleChange(event.target.value)}
-                      className="h-9 rounded-lg border-border bg-card"
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => onSaveRename(conversation.id)}>
-                        Save
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={onCancelRename}>
-                        Cancel
-                      </Button>
+              return (
+                <motion.article
+                  key={conversation.id}
+                  layout
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={listItemReveal}
+                  transition={withStagger(index, 0.03)}
+                  className={cn(
+                    "mb-2 rounded-[1rem] border px-3 py-3 transition-colors",
+                    isActive
+                      ? "border-info/25 bg-info/10 shadow-sm"
+                      : "border-transparent bg-background hover:border-border/80 hover:bg-muted/50"
+                  )}
+                >
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <Input
+                        value={editingTitle}
+                        onChange={(event) => onEditingTitleChange(event.target.value)}
+                        className="h-9 rounded-lg border-border bg-background"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => onSaveRename(conversation.id)}>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={onCancelRename}>
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => onSelectConversation(conversation.id)}
-                      className="w-full text-left"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-foreground">{conversation.title}</p>
-                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-                            {conversation.preview ?? "No messages yet"}
-                          </p>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onSelectConversation(conversation.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground">{conversation.title}</p>
+                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                              {conversation.preview ?? "No messages yet"}
+                            </p>
+                          </div>
+                          {isLoadingConversation && isActive ? (
+                            <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-muted-foreground" />
+                          ) : null}
                         </div>
-                        {isLoadingConversation && isActive ? (
-                          <Loader2 className="mt-0.5 size-4 animate-spin text-muted-foreground" />
-                        ) : null}
-                      </div>
-                    </button>
+                      </button>
 
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                        {conversation.latestMessageAt
-                          ? new Date(conversation.latestMessageAt).toLocaleDateString()
-                          : "Empty"}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="icon-xs"
-                          variant="ghost"
-                          onClick={() => onStartRename(conversation)}
-                          aria-label={`Rename ${conversation.title}`}
-                        >
-                          <Edit3 className="size-3.5" />
-                        </Button>
-                        <Button
-                          size="icon-xs"
-                          variant="ghost"
-                          onClick={() => onDeleteConversation(conversation.id)}
-                          aria-label={`Delete ${conversation.title}`}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                          {conversation.latestMessageAt
+                            ? new Date(conversation.latestMessageAt).toLocaleDateString()
+                            : "Empty"}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={() => onStartRename(conversation)}
+                            aria-label={`Rename ${conversation.title}`}
+                          >
+                            <Edit3 className="size-3.5" />
+                          </Button>
+                          <Button
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={() => onDeleteConversation(conversation.id)}
+                            aria-label={`Delete ${conversation.title}`}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </motion.article>
-            );
-          })
-        )}
+                    </>
+                  )}
+                </motion.article>
+              );
+            })
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -261,6 +278,18 @@ export function ChatPanel({
     setActiveConversation(initialConversation);
     setMessages(initialConversation ? initialConversation.messages.map(toUIMessage) : []);
   }, [initialConversation, setMessages]);
+
+  useEffect(() => {
+    if (error?.message) {
+      toast.error(error.message);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (statusMessage) {
+      toast.error(statusMessage);
+    }
+  }, [statusMessage]);
 
   const streamingMessageId = useMemo(() => {
     if (status !== "streaming") return null;
@@ -420,8 +449,7 @@ export function ChatPanel({
   const activeConversationId = activeConversation?.id ?? null;
   const showAssistantPlaceholder =
     status === "submitted" || (status === "streaming" && !streamingMessageId);
-
-  const activeConversationLabel = activeConversation?.title ?? "Unsaved chat";
+  const activeConversationLabel = activeConversation?.title ?? "New conversation";
 
   const rail = (
     <ConversationList
@@ -452,22 +480,26 @@ export function ChatPanel({
   );
 
   return (
-    <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-      <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
-        <Card className="hidden h-[calc(100vh-13rem)] rounded-[1.7rem] border-border/80 bg-card/92 shadow-sm xl:flex">
+    <motion.section
+      initial="initial"
+      animate="animate"
+      variants={panelReveal}
+      transition={panelTransition}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <div className="grid h-full min-h-0 flex-1 overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm xl:grid-cols-[18.5rem_minmax(0,1fr)]">
+        <aside className="hidden min-h-0 border-r border-border/80 bg-muted/30 xl:flex xl:flex-col">
           {rail}
-        </Card>
+        </aside>
 
-        <Card className="min-h-[42rem] rounded-[1.8rem] border-border/80 bg-card/92 shadow-sm">
-          <CardHeader className="border-b border-border/80 pb-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-h-0 flex-col overflow-hidden bg-background/80">
+          <div className="border-b border-border/80 px-4 py-4 md:px-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 xl:hidden">
                   <Sheet open={railOpen} onOpenChange={setRailOpen}>
                     <SheetTrigger
-                      render={
-                        <Button variant="outline" size="sm" className="rounded-xl" />
-                      }
+                      render={<Button variant="outline" size="sm" className="rounded-xl" />}
                     >
                       <Menu className="size-4" />
                       Chats
@@ -481,10 +513,10 @@ export function ChatPanel({
                   </Sheet>
                 </div>
                 <div>
-                  <CardTitle className="text-2xl tracking-tight">{activeConversationLabel}</CardTitle>
-                  <CardDescription className="mt-1">
-                    Ask grounded questions across inbox, contacts, notes, uploads, and links with saved history per conversation.
-                  </CardDescription>
+                  <h2 className="text-2xl font-medium tracking-tight text-foreground">{activeConversationLabel}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Ask across inbox, contacts, notes, uploads, and links with saved context per thread.
+                  </p>
                 </div>
               </div>
 
@@ -493,9 +525,32 @@ export function ChatPanel({
                   <Sparkles className="mr-1 size-3.5" />
                   Streaming RAG
                 </Badge>
-                <Badge variant="outline" className="border-border text-muted-foreground">
-                  {selectedSources.length === 0 ? "All sources" : `${selectedSources.length} filters`}
-                </Badge>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => {
+                    void createConversation();
+                  }}
+                  disabled={status === "streaming"}
+                >
+                  New chat
+                </Button>
+                {activeConversation ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl"
+                    onClick={() => {
+                      void handleDeleteConversation(activeConversation.id);
+                    }}
+                    disabled={status === "streaming"}
+                  >
+                    Delete chat
+                  </Button>
+                ) : null}
               </div>
             </div>
 
@@ -512,7 +567,7 @@ export function ChatPanel({
                     type="button"
                     variant={selectedSources.includes(source) ? "default" : "outline"}
                     size="sm"
-                    className="rounded-xl capitalize"
+                    className="rounded-full capitalize"
                     onClick={() => toggleSource(source)}
                   >
                     {source}
@@ -520,12 +575,12 @@ export function ChatPanel({
                 </motion.div>
               ))}
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="space-y-4 pt-4">
-            <div className="relative h-[33rem] overflow-hidden rounded-[1.4rem] border border-border bg-card">
-              <Conversation>
-                <ConversationContent className="gap-6 px-4 py-5">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <Conversation className="h-full min-h-0">
+                <ConversationContent className="mx-auto w-full max-w-5xl gap-5 px-4 py-5 md:px-6 md:py-6">
                   <AnimatePresence mode="popLayout" initial={false}>
                     {messages.length === 0 ? (
                       <motion.div
@@ -536,10 +591,12 @@ export function ChatPanel({
                         exit="exit"
                         variants={statusReveal}
                         transition={statusTransition}
+                        className="flex min-h-[20rem] items-center justify-center"
                       >
                         <ConversationEmptyState
+                          className="rounded-[1.4rem] border border-dashed border-border bg-muted/40"
                           title="No messages yet"
-                          description="Open an existing thread or start asking about inbox priorities, meetings, notes, or uploaded files."
+                          description="Open an existing thread or ask about inbox priorities, meetings, notes, or uploaded files."
                           icon={<Search className="size-5" />}
                         />
                       </motion.div>
@@ -554,49 +611,55 @@ export function ChatPanel({
                           <motion.article
                             layout
                             key={message.id}
-                            className={cn("mx-auto w-full max-w-4xl space-y-2", isUser && "items-end")}
+                            className="w-full space-y-2"
                             initial="initial"
                             animate="animate"
                             exit="exit"
                             variants={listItemReveal}
                             transition={withStagger(index, 0.03)}
                           >
-                            <div
-                              className={cn(
-                                "w-fit max-w-[92%] rounded-[1.2rem] border px-4 py-3 text-sm shadow-sm",
-                                isUser
-                                  ? "ml-auto border-primary/25 bg-primary text-primary-foreground"
-                                  : "border-border bg-card text-foreground"
-                              )}
-                            >
-                              <p className="whitespace-pre-wrap leading-6">{text || "..."}</p>
+                            <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+                              <div
+                                className={cn(
+                                  "max-w-[min(52rem,92%)] rounded-[1.25rem] px-4 py-3 text-sm shadow-sm",
+                                  isUser
+                                    ? "bg-primary text-primary-foreground"
+                                    : "border border-border/80 bg-card text-foreground"
+                                )}
+                              >
+                                <p className="whitespace-pre-wrap leading-7">{text || "..."}</p>
+                              </div>
                             </div>
 
                             {!isUser && reasoning ? (
-                              <Reasoning isStreaming={streamingMessageId === message.id}>
-                                <ReasoningTrigger />
-                                <ReasoningContent>{reasoning}</ReasoningContent>
-                              </Reasoning>
+                              <div className="max-w-[min(52rem,92%)]">
+                                <Reasoning isStreaming={streamingMessageId === message.id}>
+                                  <ReasoningTrigger />
+                                  <ReasoningContent>{reasoning}</ReasoningContent>
+                                </Reasoning>
+                              </div>
                             ) : null}
 
                             {!isUser && citations.length > 0 ? (
-                              <Sources>
-                                <SourcesTrigger count={citations.length} />
-                                <SourcesContent>
-                                  {citations.map((citation: ChatCitation, idx: number) => (
-                                    <Source
-                                      key={`${citation.messageOrDocId}-${idx}`}
-                                      href={citation.deepLink ?? "#"}
-                                      title={`${citation.sourceType}: ${citation.snippet.slice(0, 80)}...`}
-                                    >
-                                      <span className="truncate text-left text-xs">
-                                        {citation.sourceType}: {citation.snippet.slice(0, 120)}
-                                        {citation.deepLink ? "" : " (no deep link)"}
-                                      </span>
-                                    </Source>
-                                  ))}
-                                </SourcesContent>
-                              </Sources>
+                              <div className="max-w-[min(52rem,92%)]">
+                                <Sources>
+                                  <SourcesTrigger count={citations.length} />
+                                  <SourcesContent>
+                                    {citations.map((citation: ChatCitation, idx: number) => (
+                                      <Source
+                                        key={`${citation.messageOrDocId}-${idx}`}
+                                        href={citation.deepLink ?? "#"}
+                                        title={`${citation.sourceType}: ${citation.snippet.slice(0, 80)}...`}
+                                      >
+                                        <span className="truncate text-left text-xs">
+                                          {citation.sourceType}: {citation.snippet.slice(0, 120)}
+                                          {citation.deepLink ? "" : " (no deep link)"}
+                                        </span>
+                                      </Source>
+                                    ))}
+                                  </SourcesContent>
+                                </Sources>
+                              </div>
                             ) : null}
                           </motion.article>
                         );
@@ -607,7 +670,7 @@ export function ChatPanel({
                       <motion.article
                         layout
                         key="assistant-pending"
-                        className="mx-auto w-full max-w-4xl space-y-2"
+                        className="w-full"
                         initial="initial"
                         animate="animate"
                         exit="exit"
@@ -626,89 +689,50 @@ export function ChatPanel({
               </Conversation>
             </div>
 
-            <PromptInput
-              className="rounded-[1.4rem] border border-border bg-card p-2 shadow-sm"
-              onSubmit={async (message) => {
-                if (!message.text.trim() || !canSubmit) return;
+            <div className="border-t border-border/80 bg-muted/20 px-4 py-4 md:px-6">
+              <div className="mx-auto max-w-5xl">
+                <PromptInput
+                  className="rounded-[1.5rem] bg-background p-2 shadow-sm ring-1 ring-border"
+                  onSubmit={async (message) => {
+                    if (!message.text.trim() || !canSubmit) return;
 
-                let conversationId = activeConversation?.id ?? null;
-                if (!conversationId) {
-                  const createdConversation = await createConversation();
-                  conversationId = createdConversation?.id ?? null;
-                }
-
-                if (!conversationId) {
-                  return;
-                }
-
-                await sendMessage(
-                  {
-                    text: message.text,
-                    metadata: {
-                      sourceTypes: selectedSources
+                    let conversationId = activeConversation?.id ?? null;
+                    if (!conversationId) {
+                      const createdConversation = await createConversation();
+                      conversationId = createdConversation?.id ?? null;
                     }
-                  },
-                  {
-                    body: {
-                      conversationId,
-                      sourceTypes: selectedSources
-                    }
-                  }
-                );
-              }}
-            >
-              <PromptInputBody>
-                <PromptInputTextarea placeholder="Ask about a contact, email, decision, note, or file..." />
-              </PromptInputBody>
-              <PromptInputFooter>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      void createConversation();
-                    }}
-                    disabled={status === "streaming"}
-                  >
-                    New chat
-                  </Button>
-                  {activeConversation ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        void handleDeleteConversation(activeConversation.id);
-                      }}
-                      disabled={status === "streaming"}
-                    >
-                      Delete chat
-                    </Button>
-                  ) : null}
-                </div>
-                <PromptInputSubmit status={status} onStop={stop} />
-              </PromptInputFooter>
-            </PromptInput>
 
-            <AnimatePresence mode="popLayout" initial={false}>
-              {error || statusMessage ? (
-                <motion.p
-                  key={`chat-error-${error?.message ?? statusMessage}`}
-                  layout
-                  className="rounded-xl tone-danger px-3 py-2 text-sm"
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  variants={statusReveal}
-                  transition={statusTransition}
+                    if (!conversationId) {
+                      return;
+                    }
+
+                    await sendMessage(
+                      {
+                        text: message.text,
+                        metadata: {
+                          sourceTypes: selectedSources
+                        }
+                      },
+                      {
+                        body: {
+                          conversationId,
+                          sourceTypes: selectedSources
+                        }
+                      }
+                    );
+                  }}
                 >
-                  {error?.message ?? statusMessage}
-                </motion.p>
-              ) : null}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
+                  <PromptInputBody>
+                    <PromptInputTextarea placeholder="Ask about a contact, email, decision, note, or file..." />
+                  </PromptInputBody>
+                  <PromptInputFooter className="justify-end">
+                    <PromptInputSubmit status={status} onStop={stop} />
+                  </PromptInputFooter>
+                </PromptInput>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </motion.section>
   );

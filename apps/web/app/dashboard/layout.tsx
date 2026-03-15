@@ -25,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DashboardShell
       workspaceName={workspace?.name ?? "Syntheci"}
       openThreadCount={openThreadCount}
+      userName={session.user.name}
       userEmail={session.user.email}
     >
       {children}

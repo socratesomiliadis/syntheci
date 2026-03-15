@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import type { TriageLabel } from "@syntheci/shared";
 
@@ -96,8 +97,6 @@ function buildEmailDocument(htmlBody: string) {
 
 export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
   const [items, setItems] = useState(initialItems);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null
@@ -108,7 +107,6 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
 
   async function triageMessage(messageId: string) {
     setBusyId(messageId);
-    setStatus(null);
     try {
       const response = await fetch("/api/triage", {
         method: "POST",
@@ -128,11 +126,9 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
             : item
         )
       );
-      setStatusTone("success");
-      setStatus("Triage refreshed.");
+      toast.success("Triage refreshed.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Triage failed");
+      toast.error(error instanceof Error ? error.message : "Triage failed");
     } finally {
       setBusyId(null);
     }
@@ -147,11 +143,9 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
         body: JSON.stringify({ messageId }),
       });
       if (!response.ok) throw new Error("Draft generation failed");
-      setStatusTone("success");
-      setStatus("Draft generated. Open draft center to approve/send.");
+      toast.success("Draft generated. Open draft center to approve/send.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Draft failed");
+      toast.error(error instanceof Error ? error.message : "Draft failed");
     } finally {
       setBusyId(null);
     }
@@ -166,11 +160,9 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
         body: JSON.stringify({ messageId }),
       });
       if (!response.ok) throw new Error("Meeting extraction failed");
-      setStatusTone("success");
-      setStatus("Meeting proposal generated.");
+      toast.success("Meeting proposal generated.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(
+      toast.error(
         error instanceof Error ? error.message : "Meeting extraction failed"
       );
     } finally {
@@ -200,27 +192,6 @@ export function PriorityInbox({ initialItems }: { initialItems: InboxItem[] }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {status ? (
-                <motion.p
-                  key={`inbox-status-${statusTone}-${status}`}
-                  layout
-                  className={
-                    statusTone === "error"
-                      ? "rounded-lg tone-danger px-3 py-2 text-sm"
-                      : "rounded-lg tone-success px-3 py-2 text-sm"
-                  }
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  variants={statusReveal}
-                  transition={statusTransition}
-                >
-                  {status}
-                </motion.p>
-              ) : null}
-            </AnimatePresence>
-
             <AnimatePresence mode="popLayout" initial={false}>
               {items.length === 0 ? (
                 <motion.p

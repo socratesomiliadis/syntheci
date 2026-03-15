@@ -1,43 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  embedMock: vi.fn(),
+  embedTextMock: vi.fn(),
   generateTextMock: vi.fn(),
   streamTextMock: vi.fn()
 }));
 
 vi.mock("ai", () => ({
-  embed: mocks.embedMock,
   generateText: mocks.generateTextMock,
   streamText: mocks.streamTextMock
 }));
 
+vi.mock("./embeddings", () => ({
+  embedText: mocks.embedTextMock
+}));
+
 vi.mock("./client", () => ({
-  chatModel: { id: "chat-model" },
-  embeddingModel: { id: "embedding-model" }
+  chatModel: { id: "chat-model" }
 }));
 
 import { answerWithCitations, embedQuery, streamAnswerWithCitations } from "./chat";
 
 describe("chat workflows", () => {
   beforeEach(() => {
-    mocks.embedMock.mockReset();
+    mocks.embedTextMock.mockReset();
     mocks.generateTextMock.mockReset();
     mocks.streamTextMock.mockReset();
   });
 
   it("embeds a query", async () => {
-    mocks.embedMock.mockResolvedValue({
-      embedding: [0.1, 0.2, 0.3]
-    });
+    mocks.embedTextMock.mockResolvedValue([0.1, 0.2, 0.3]);
 
     await expect(embedQuery("where is the note?")).resolves.toEqual([0.1, 0.2, 0.3]);
-    expect(mocks.embedMock).toHaveBeenCalledTimes(1);
-    expect(mocks.embedMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        value: "where is the note?"
-      })
-    );
+    expect(mocks.embedTextMock).toHaveBeenCalledTimes(1);
+    expect(mocks.embedTextMock).toHaveBeenCalledWith("where is the note?");
   });
 
   it("answers with bounded citations", async () => {

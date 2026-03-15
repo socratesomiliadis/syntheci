@@ -82,9 +82,10 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-replace-me}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-replace-me}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-replace-me}
-      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4.1-mini}
-      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-replace-me}
+      GOOGLE_EMBEDDING_MODEL: ${GOOGLE_EMBEDDING_MODEL:-gemini-embedding-001}
+      GROQ_API_KEY: ${GROQ_API_KEY:-replace-me}
+      GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-moonshotai/kimi-k2-instruct-0905}
     ports:
       - "3000:3000"
 
@@ -113,9 +114,10 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-replace-with-long-random-secret}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-replace-me}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-replace-me}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-replace-me}
-      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4.1-mini}
-      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-replace-me}
+      GOOGLE_EMBEDDING_MODEL: ${GOOGLE_EMBEDDING_MODEL:-gemini-embedding-001}
+      GROQ_API_KEY: ${GROQ_API_KEY:-replace-me}
+      GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-moonshotai/kimi-k2-instruct-0905}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
       LOG_LEVEL: ${LOG_LEVEL:-info}
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { useState } from "react";
 
 import { Loader2, Upload } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import {
   overlayReveal,
@@ -11,7 +12,6 @@ import {
   panelReveal,
   panelTransition,
   statusReveal,
-  statusTransition,
   withStagger
 } from "@/components/dashboard/motion-presets";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,6 @@ export function IngestPanel() {
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [isBusy, setIsBusy] = useState(false);
 
   async function createNote() {
@@ -43,11 +41,9 @@ export function IngestPanel() {
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setNoteTitle("");
       setNoteBody("");
-      setStatusTone("success");
-      startTransition(() => setStatus("Note saved and queued for embedding."));
+      toast.success("Note saved and queued for embedding.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Note failed");
+      toast.error(error instanceof Error ? error.message : "Note failed");
     } finally {
       setIsBusy(false);
     }
@@ -64,11 +60,9 @@ export function IngestPanel() {
       });
       if (!response.ok) throw new Error(`Failed (${response.status})`);
       setLinkUrl("");
-      setStatusTone("success");
-      startTransition(() => setStatus("Link queued for extraction and embeddings."));
+      toast.success("Link queued for extraction and embeddings.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Link import failed");
+      toast.error(error instanceof Error ? error.message : "Link import failed");
     } finally {
       setIsBusy(false);
     }
@@ -111,11 +105,9 @@ export function IngestPanel() {
       });
       if (!completeResponse.ok) throw new Error("Upload completion failed");
 
-      setStatusTone("success");
-      startTransition(() => setStatus("Upload indexed and queued for processing."));
+      toast.success("Upload indexed and queued for processing.");
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Upload failed");
+      toast.error(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setIsBusy(false);
     }
@@ -208,27 +200,6 @@ export function IngestPanel() {
               Queue link import
             </Button>
           </motion.div>
-
-          <AnimatePresence mode="popLayout" initial={false}>
-            {status ? (
-              <motion.p
-                key={`ingest-status-${statusTone}-${status}`}
-                layout
-                className={
-                  statusTone === "error"
-                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
-                    : "rounded-lg tone-success px-3 py-2 text-sm"
-                }
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={statusReveal}
-                transition={statusTransition}
-              >
-                {status}
-              </motion.p>
-            ) : null}
-          </AnimatePresence>
 
           <AnimatePresence mode="popLayout" initial={false}>
             {isBusy ? (

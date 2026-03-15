@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { google } from "googleapis";
 
-import { classifyMessageTriage } from "@syntheci/ai";
+import { chatModelVersion, classifyMessageTriage } from "@syntheci/ai";
 import {
   connectedAccounts,
   db,
@@ -197,7 +197,7 @@ async function persistMessageFromGmail(input: {
       label: triage.label,
       confidence: triage.confidence,
       rationale: triage.rationale,
-      modelVersion: process.env.OPENAI_CHAT_MODEL ?? "gpt-4.1-mini"
+      modelVersion: chatModelVersion
     })
     .onConflictDoUpdate({
       target: triageResults.messageId,
@@ -205,7 +205,7 @@ async function persistMessageFromGmail(input: {
         label: triage.label,
         confidence: triage.confidence,
         rationale: triage.rationale,
-        modelVersion: process.env.OPENAI_CHAT_MODEL ?? "gpt-4.1-mini",
+        modelVersion: chatModelVersion,
         updatedAt: new Date()
       }
     });

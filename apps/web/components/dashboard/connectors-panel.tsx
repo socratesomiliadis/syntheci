@@ -1,9 +1,10 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { useState } from "react";
 
 import { Link2, Loader2, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { toast } from "sonner";
 
 import {
   listItemReveal,
@@ -27,12 +28,9 @@ interface ConnectorStatus {
 
 export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] }) {
   const [isSyncing, setIsSyncing] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [statusTone, setStatusTone] = useState<"success" | "error">("success");
 
   async function syncGmail() {
     setIsSyncing(true);
-    setStatus(null);
 
     try {
       const response = await fetch("/api/connectors/google/sync", {
@@ -47,17 +45,13 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
         queued: number;
       };
 
-      setStatusTone("success");
-      startTransition(() =>
-        setStatus(
-          payload.queued === 1
-            ? "Gmail sync queued. Refresh in a few seconds."
-            : `${payload.queued} Gmail sync jobs queued.`
-        )
+      toast.success(
+        payload.queued === 1
+          ? "Gmail sync queued. Refresh in a few seconds."
+          : `${payload.queued} Gmail sync jobs queued.`
       );
     } catch (error) {
-      setStatusTone("error");
-      setStatus(error instanceof Error ? error.message : "Gmail sync failed.");
+      toast.error(error instanceof Error ? error.message : "Gmail sync failed.");
     } finally {
       setIsSyncing(false);
     }
@@ -116,26 +110,6 @@ export function ConnectorsPanel({ connectors }: { connectors: ConnectorStatus[] 
               Sync Gmail Now
             </Button>
           </div>
-
-          <AnimatePresence mode="popLayout" initial={false}>
-            {status ? (
-              <motion.p
-                key={`connector-status-${statusTone}-${status}`}
-                layout
-                className={
-                  statusTone === "error"
-                    ? "rounded-lg tone-danger px-3 py-2 text-sm"
-                    : "rounded-lg tone-success px-3 py-2 text-sm"
-                }
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={statusReveal}
-              >
-                {status}
-              </motion.p>
-            ) : null}
-          </AnimatePresence>
 
           <AnimatePresence mode="popLayout" initial={false}>
             {connectors.length === 0 ? (
