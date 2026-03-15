@@ -170,4 +170,69 @@ describe("chat workflows", () => {
     expect(call.system).toContain("Evidence:\n[1] (gmail) Meeting moved to 3pm.");
     expect(call.messages).toEqual([{ role: "user", content: "What changed?" }]);
   });
+
+  it("bounds streaming citations to the strongest few chunks instead of returning the full retrieval set", () => {
+    const streamResult = { stream: true };
+    mocks.streamTextMock.mockReturnValue(streamResult);
+
+    const output = streamAnswerWithCitations({
+      question: "What should I send Catalyst before the security review?",
+      chunks: [
+        {
+          id: "chunk-1",
+          sourceType: "gmail",
+          sourceId: "source-1",
+          messageOrDocId: "security-review-email",
+          content: "Catalyst needs answers on retention, SSO, and regional storage controls before tomorrow's review.",
+          deepLink: null
+        },
+        {
+          id: "chunk-2",
+          sourceType: "upload",
+          sourceId: "source-2",
+          messageOrDocId: "security-qa-pack",
+          content: "Security QA pack covers retention, SSO, and regional storage controls for regulated buyers.",
+          deepLink: null
+        },
+        {
+          id: "chunk-3",
+          sourceType: "note",
+          sourceId: "source-3",
+          messageOrDocId: "procurement-faq-note",
+          content: "Standard answers include retention policy wording and SSO configuration guidance.",
+          deepLink: null
+        },
+        {
+          id: "chunk-4",
+          sourceType: "link",
+          sourceId: "source-4",
+          messageOrDocId: "security-overview",
+          content: "Security overview article explains operating controls for regulated environments.",
+          deepLink: null
+        },
+        {
+          id: "chunk-5",
+          sourceType: "gmail",
+          sourceId: "source-1",
+          messageOrDocId: "monthly-report",
+          content: "February operating report with no security details.",
+          deepLink: null
+        },
+        {
+          id: "chunk-6",
+          sourceType: "note",
+          sourceId: "source-3",
+          messageOrDocId: "board-note",
+          content: "Board prep note about pipeline and launches.",
+          deepLink: null
+        }
+      ],
+      messages: [{ role: "user", content: "What should I send?" }]
+    });
+
+    expect(output.result).toBe(streamResult);
+    expect(output.citations.length).toBeLessThanOrEqual(4);
+    expect(output.citations.map((citation) => citation.messageOrDocId)).not.toContain("board-note");
+    expect(output.citations.map((citation) => citation.messageOrDocId)).toContain("security-review-email");
+  });
 });

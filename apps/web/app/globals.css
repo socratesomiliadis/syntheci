@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@source "../../../node_modules/streamdown/dist/*.js";
+@source "../../../node_modules/@streamdown/code/dist/*.js";
+@source "../../../node_modules/@streamdown/cjk/dist/*.js";
+@source "../../../node_modules/@streamdown/math/dist/*.js";
+@source "../../../node_modules/@streamdown/mermaid/dist/*.js";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -59,7 +65,7 @@
   --shadow-xl: 0 1px 0px 0px hsl(0 0% 0% / 0), 0 8px 10px -1px hsl(0 0% 0% / 0);
   --shadow-2xl: 0 1px 0px 0px hsl(0 0% 0% / 0);
   --tracking-normal: -0.02em;
-  --spacing: 0.3rem;
+  --spacing: 0.25rem;
 }
 
 .dark {
@@ -226,5 +232,65 @@
 
   .tone-danger {
     @apply border border-destructive/25 bg-destructive/10 text-destructive;
+  }
+
+  .chat-markdown {
+    @apply text-[0.95rem] leading-7 text-foreground;
+  }
+
+  .chat-markdown > * + * {
+    @apply mt-4;
+  }
+
+  .chat-markdown :where(h1, h2, h3, h4) {
+    @apply font-semibold tracking-tight text-foreground;
+  }
+
+  .chat-markdown :where(h1) {
+    @apply text-xl;
+  }
+
+  .chat-markdown :where(h2) {
+    @apply text-lg;
+  }
+
+  .chat-markdown :where(h3, h4) {
+    @apply text-base;
+  }
+
+  .chat-markdown :where(ul, ol) {
+    @apply space-y-2 pl-5;
+  }
+
+  .chat-markdown :where(li) {
+    @apply text-foreground;
+  }
+
+  .chat-markdown :where(blockquote) {
+    @apply border-l-2 border-info/35 pl-4 italic text-muted-foreground;
+  }
+
+  .chat-markdown :where(a) {
+    @apply font-medium text-primary underline underline-offset-4;
+  }
+
+  .chat-markdown :where(code):not(pre code) {
+    @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+
+  .chat-markdown :where(pre) {
+    @apply overflow-x-auto rounded-2xl border border-border/80 bg-muted/80 p-4;
+  }
+
+  .chat-markdown :where(table) {
+    @apply block w-full overflow-x-auto rounded-2xl border border-border/80;
+  }
+
+  .chat-markdown :where(th) {
+    @apply bg-muted/70 px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground;
+  }
+
+  .chat-markdown :where(td) {
+    @apply border-t border-border/70 px-3 py-2 align-top text-sm;
   }
 }

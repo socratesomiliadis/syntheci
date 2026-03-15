@@ -32,6 +32,7 @@
     "drizzle-orm": "^0.44.7",
     "googleapis": "^144.0.0",
     "ioredis": "5.9.3",
+    "katex": "^0.16.38",
     "lucide-react": "^0.577.0",
     "motion": "^12.35.0",
     "nanoid": "^5.1.6",

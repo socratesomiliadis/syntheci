@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Geist } from "next/font/google";
+import "katex/dist/katex.min.css";
+import "streamdown/styles.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";

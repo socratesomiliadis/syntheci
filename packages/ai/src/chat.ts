@@ -26,6 +26,7 @@ const streamChatInputSchema = chatInputSchema.extend({
 });
 
 const CITATION_CONTEXT_LIMIT = 5;
+const STREAM_CITATION_LIMIT = 4;
 const CITATION_STOPWORDS = new Set([
   "about",
   "after",
@@ -80,14 +81,15 @@ function tokenizeCitationText(text: string) {
 
 function chooseFallbackCitations(input: {
   question: string;
-  answer: string;
+  answer?: string;
   chunks: z.infer<typeof retrievalChunkSchema>[];
+  limit?: number;
 }) {
   const questionTokens = new Set(tokenizeCitationText(input.question));
-  const answerTokens = new Set(tokenizeCitationText(input.answer));
+  const answerTokens = new Set(tokenizeCitationText(input.answer ?? ""));
 
   const scored = input.chunks
-    .map((chunk) => {
+    .map((chunk, index) => {
       const content = chunk.content.toLowerCase();
       let score = 0;
 
@@ -107,6 +109,9 @@ function chooseFallbackCitations(input: {
         score += 1;
       }
 
+      // Earlier retrieval results are usually stronger evidence candidates.
+      score += Math.max(0, 4 - index) * 0.2;
+
       return {
         chunk,
         score
@@ -114,7 +119,7 @@ function chooseFallbackCitations(input: {
     })
     .filter((item) => item.score > 0)
     .sort((left, right) => right.score - left.score)
-    .slice(0, 2)
+    .slice(0, input.limit ?? 2)
     .map((item) => item.chunk);
 
   return scored;
@@ -157,7 +162,8 @@ Rules:
       : chooseFallbackCitations({
           question: input.question,
           answer: object.answer,
-          chunks: citationWindow
+          chunks: citationWindow,
+          limit: 2
         });
 
   return chatAnswerSchema.parse({
@@ -169,7 +175,14 @@ Rules:
 export function streamAnswerWithCitations(rawInput: z.infer<typeof streamChatInputSchema>) {
   const input = streamChatInputSchema.parse(rawInput);
   const context = buildContext(input.chunks);
-  const citations = buildCitations(input.chunks);
+  const citationWindow = input.chunks.slice(0, CITATION_CONTEXT_LIMIT);
+  const citations = buildCitations(
+    chooseFallbackCitations({
+      question: input.question,
+      chunks: citationWindow,
+      limit: STREAM_CITATION_LIMIT
+    })
+  );
 
   const result = streamText({
     model: chatModel,
