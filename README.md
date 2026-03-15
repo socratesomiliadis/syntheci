@@ -1,4 +1,30 @@
+> [!IMPORTANT]
+> This project was created for the Netcompany Hackathon 2026.
+> It is intentionally MVP-shaped: ambitious, end-to-end, and optimized for demoability, speed, and product clarity over production-hardening.
+
+<div align="center">
+
 # Syntheci
+
+### An AI workspace for turning scattered operational context into action
+
+<p>
+  <img alt="Hackathon" src="https://img.shields.io/badge/Netcompany-Hackathon%202026-0f172a?style=for-the-badge">
+  <img alt="Monorepo" src="https://img.shields.io/badge/Monorepo-pnpm-f59e0b?style=for-the-badge">
+  <img alt="Frontend" src="https://img.shields.io/badge/Frontend-Next.js%2016-111827?style=for-the-badge">
+  <img alt="Workers" src="https://img.shields.io/badge/Jobs-BullMQ-2563eb?style=for-the-badge">
+  <img alt="Database" src="https://img.shields.io/badge/Database-Postgres%20%2B%20pgvector-0ea5e9?style=for-the-badge">
+</p>
+
+<p>
+  <img alt="Storage" src="https://img.shields.io/badge/Object%20Storage-MinIO-059669?style=flat-square">
+  <img alt="Auth" src="https://img.shields.io/badge/Auth-Better%20Auth-7c3aed?style=flat-square">
+  <img alt="AI SDK" src="https://img.shields.io/badge/AI-AI%20SDK-c2410c?style=flat-square">
+  <img alt="Embeddings" src="https://img.shields.io/badge/Embeddings-Google-1d4ed8?style=flat-square">
+  <img alt="Generation" src="https://img.shields.io/badge/Generation-Groq%20%2B%20Kimi-111827?style=flat-square">
+</p>
+
+</div>
 
 Syntheci is an AI workspace for turning scattered operational context into an actionable system.
 
@@ -13,6 +39,52 @@ It combines:
 - approval-driven meeting creation
 
 All of that runs inside a pnpm monorepo built with Next.js, BullMQ, Postgres + pgvector, Redis, MinIO, Better Auth, and the AI SDK.
+
+---
+
+## At a glance
+
+<table>
+  <tr>
+    <td valign="top" width="33%">
+      <strong>What it feels like</strong><br>
+      A second brain for operational work: triage what matters, ask grounded questions, approve the right actions, and keep context in one place.
+    </td>
+    <td valign="top" width="33%">
+      <strong>What powers it</strong><br>
+      Next.js, Better Auth, Drizzle, Postgres + pgvector, Redis, BullMQ, MinIO, Groq, and Google embeddings.
+    </td>
+    <td valign="top" width="33%">
+      <strong>What makes it interesting</strong><br>
+      Shared canonical storage, queue-backed ingestion, citation-based chat, and approval-driven automation all in one stack.
+    </td>
+  </tr>
+</table>
+
+## Core capabilities
+
+<table>
+  <tr>
+    <td valign="top" width="50%">
+      <strong>Inbox and prioritization</strong><br>
+      Gmail sync, triage labels, ranking logic, sender enrichment, and action-oriented inbox review.
+    </td>
+    <td valign="top" width="50%">
+      <strong>Knowledge and retrieval</strong><br>
+      Hybrid retrieval across messages, notes, links, uploads, and synthesized contact knowledge.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" width="50%">
+      <strong>Human-in-the-loop automation</strong><br>
+      Draft replies and meeting proposals are generated quickly, but external side effects stay approval-gated.
+    </td>
+    <td valign="top" width="50%">
+      <strong>Demo-ready end-to-end experience</strong><br>
+      Seeded workspace, seeded data, seeded chat history, and seeded meetings make the product immediately explorable.
+    </td>
+  </tr>
+</table>
 
 ## Table of Contents
 
@@ -46,6 +118,9 @@ Syntheci is designed to act like a second operational brain:
 - require explicit human approval before high-impact sends or calendar creation
 
 The result is a workspace that is useful both as a demoable hackathon MVP and as a serious architecture for retrieval, triage, and approval-based automation.
+
+> [!TIP]
+> If you want the fastest path to seeing the product, use the seeded demo login after running the bootstrap flow. The demo workspace already contains messages, notes, links, files, briefings, meetings, contacts, and saved chat threads.
 
 ## What the product does
 
@@ -144,6 +219,10 @@ This makes the system reviewable end-to-end even without real Google credentials
 
 ## System architecture
 
+<p align="center">
+  <em>One application layer, one canonical workspace store, one retrieval substrate, and multiple human-approved action paths.</em>
+</p>
+
 ```mermaid
 flowchart LR
     User["User"] --> Web["Next.js Web App"]
@@ -173,6 +252,18 @@ flowchart LR
 | `packages/shared` | shared schemas, queue contracts, demo fixtures, constants |
 
 ## End-to-end flows
+
+<details>
+<summary><strong>How to read the flows</strong></summary>
+
+These diagrams are meant to show the product as a system, not just as isolated API routes:
+
+- ingestion turns raw inputs into canonical data plus embeddings
+- sync jobs turn external systems into internal workspace knowledge
+- chat reuses the same retrieval substrate as briefs and action generation
+- high-impact actions stay behind explicit approval state transitions
+
+</details>
 
 ### Ingestion flow
 
@@ -261,6 +352,10 @@ flowchart LR
 
 ## Repository structure
 
+<p align="center">
+  <em>Web app for orchestration and UX, worker for background execution, shared packages for contracts and intelligence.</em>
+</p>
+
 ```text
 .
 |-- apps
@@ -285,6 +380,15 @@ flowchart LR
 ```
 
 ## Tech stack
+
+<table>
+  <tr>
+    <td valign="top" width="25%"><strong>Frontend</strong><br>Next.js 16, React 19, Tailwind 4, Motion</td>
+    <td valign="top" width="25%"><strong>Auth</strong><br>Better Auth</td>
+    <td valign="top" width="25%"><strong>Data</strong><br>Postgres, pgvector, Drizzle</td>
+    <td valign="top" width="25%"><strong>Infra</strong><br>Redis, BullMQ, MinIO, Docker</td>
+  </tr>
+</table>
 
 ### Frontend and application layer
 
@@ -313,6 +417,10 @@ flowchart LR
 - Google embeddings for vector search
 
 ## Getting started
+
+> [!NOTE]
+> There are two good ways to run the project locally:
+> `compose:up` for a mostly containerized experience, or `compose:dev` plus local web/worker processes for a faster development loop.
 
 ### Prerequisites
 
@@ -369,6 +477,9 @@ Default demo credentials:
 
 In the UI, you can simply click `Use demo account`.
 
+> [!TIP]
+> The demo path is the best way to understand the full product shape quickly because it exercises chat, ingestion, contacts, inbox, drafts, meetings, and briefings without needing real Google data.
+
 ### Rebuilding after public env changes
 
 If you change a `NEXT_PUBLIC_*` variable such as `NEXT_PUBLIC_APP_URL`, rebuild the web image:
@@ -379,6 +490,22 @@ docker compose up -d web
 ```
 
 ## Environment variables
+
+<details>
+<summary><strong>Why the env surface is larger than a typical app</strong></summary>
+
+Syntheci is not just a web UI. It spans:
+
+- OAuth
+- worker queues
+- object storage
+- embeddings
+- text generation
+- demo bootstrap
+
+That means the environment is configuring both product behavior and infrastructure behavior.
+
+</details>
 
 The root `.env.example` is already a good source of truth. The table below explains what each variable actually controls.
 
@@ -450,6 +577,10 @@ pnpm compose:down
 ## Important code highlights
 
 These are some of the most important pieces of logic in the repo.
+
+<p align="center">
+  <em>These snippets are the real "why this architecture works" moments in the codebase.</em>
+</p>
 
 ### 1. New users automatically get a workspace
 
@@ -641,6 +772,18 @@ erDiagram
 
 This is the most important route surface in the project today.
 
+<details>
+<summary><strong>Design philosophy behind the API</strong></summary>
+
+The route surface mostly falls into four buckets:
+
+- session and workspace context
+- ingestion and connector orchestration
+- retrieval and conversation state
+- action generation plus approval-gated execution
+
+</details>
+
 ### Auth and session
 
 - `GET/POST /api/auth/[...all]`
@@ -710,6 +853,8 @@ And type-check with:
 ```bash
 pnpm typecheck
 ```
+
+---
 
 ## Operational notes
 
@@ -781,6 +926,8 @@ The repo is well set up for local Docker development, but it does not yet includ
 
 If this project is going to be shared publicly, adding a `LICENSE` file would make the repo more complete.
 
+---
+
 ## Why this codebase is interesting
 
 Syntheci is more than a UI demo. It is a tightly connected system where:
@@ -799,3 +946,7 @@ That combination makes the repo a strong reference for:
 - retrieval over mixed operational sources
 - queue-backed ingestion pipelines
 - demoable full-stack monorepos
+
+<div align="center">
+  <sub>Built for the Netcompany Hackathon 2026.</sub>
+</div>
