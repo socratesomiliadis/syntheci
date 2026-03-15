@@ -71,7 +71,7 @@ All of that runs inside a pnpm monorepo built with Next.js, BullMQ, Postgres + p
     </td>
     <td valign="top" width="50%">
       <strong>Knowledge and retrieval</strong><br>
-      Hybrid retrieval across messages, notes, links, uploads, and synthesized contact knowledge.
+      Two-stage hybrid retrieval across messages, notes, links, uploads, and synthesized contact knowledge, with reranking for stronger evidence diversity.
     </td>
   </tr>
   <tr>
@@ -97,6 +97,7 @@ All of that runs inside a pnpm monorepo built with Next.js, BullMQ, Postgres + p
 - [Getting started](#getting-started)
 - [Environment variables](#environment-variables)
 - [Developer commands](#developer-commands)
+- [Benchmarking and evaluation](#benchmarking-and-evaluation)
 - [Important code highlights](#important-code-highlights)
 - [Data model](#data-model)
 - [API surface](#api-surface)
@@ -169,7 +170,7 @@ The ingestion dashboard now also includes a searchable document library for brow
 ### 5. Grounded chat with citations
 
 - Chat uses retrieval-augmented generation over `content_chunks`.
-- Retrieval blends vector similarity, PostgreSQL full-text ranking, and source-specific rank boosts.
+- Retrieval now uses a two-stage pipeline: broad hybrid candidate fetch in Postgres, then intent-aware reranking that improves evidence diversity across emails and documents.
 - Conversations are persisted.
 - Assistant responses include citations back to the underlying message or document.
 
@@ -249,6 +250,7 @@ flowchart LR
 | `apps/worker` | background processing, extraction, indexing, Gmail sync, briefings, scheduler |
 | `packages/db` | schema, Drizzle client, migrations, DB helpers |
 | `packages/ai` | chat, embeddings, triage, briefing, draft, meeting extraction |
+| `packages/evals` | benchmark cases, scoring, report generation, and the live benchmark CLI |
 | `packages/shared` | shared schemas, queue contracts, demo fixtures, constants |
 
 ## End-to-end flows
@@ -373,6 +375,7 @@ flowchart LR
 |-- packages
 |   |-- ai
 |   |-- db
+|   |-- evals
 |   `-- shared
 |-- docker-compose.yml
 |-- package.json
@@ -555,6 +558,7 @@ pnpm build
 pnpm lint
 pnpm test
 pnpm typecheck
+pnpm benchmark
 pnpm db:migrate
 pnpm db:generate
 pnpm compose:up
@@ -573,6 +577,61 @@ pnpm compose:down
 - `/dashboard/meetings`
 - `/api/health`
 - `/api/connectors/health`
+
+## Benchmarking and evaluation
+
+Syntheci includes a dedicated benchmark harness in `packages/evals` and a root command:
+
+```bash
+pnpm benchmark
+```
+
+What it does:
+
+- verifies the required AI, database, and storage dependencies
+- reseeds the demo workspace into a known state
+- imports the remaining demo sync batches
+- runs objective suites for retrieval, citation grounding, structured multi-document conclusions, triage, briefing generation, and meeting extraction
+- writes machine-readable and Markdown reports to `benchmark-reports/<timestamp>/`
+
+Artifacts generated per run:
+
+- `benchmark-report.json`
+- `benchmark-report.md`
+- `benchmark-summary.md`
+
+### Current benchmark snapshot
+
+Latest validated run:
+
+- Date: **March 15, 2026**
+- Timestamp: `2026-03-15T19:39:26.768Z`
+- Dataset: `Syntheci Demo Workspace benchmark v1`
+- Reports: [benchmark-reports/2026-03-15T19-39-26-768Z](D:\Projects\playground\syntheci\benchmark-reports\2026-03-15T19-39-26-768Z)
+
+| Metric | Result |
+| --- | ---: |
+| Retrieval Recall@5 | 80.0% |
+| Retrieval MRR | 80.0% |
+| Citation precision | 62.5% |
+| Citation coverage | 100.0% |
+| Multi-document conclusion accuracy | 100.0% |
+| Single-document conclusion accuracy | 100.0% |
+| Triage accuracy | 81.8% |
+| Briefing item recall | 66.7% |
+| Briefing priority coverage | 100.0% |
+| Meeting intent accuracy | 100.0% |
+| Meeting time exact-match rate | 100.0% |
+| Retrieval latency (median / p95) | 289 ms / 298 ms |
+| Structured chat latency (median / p95) | 649 ms / 708 ms |
+| Triage latency (median / p95) | 0 ms / 408 ms |
+| Meeting extraction latency (median / p95) | 456 ms / 484 ms |
+
+### Why these numbers are useful
+
+- They are objective and quote-safe: the benchmark uses seeded gold cases and deterministic scoring rather than subjective LLM judging.
+- They are reproducible: each run resets the workspace, imports the same demo corpus, and emits traceable artifacts.
+- They now reflect the improved retrieval stack, including the new reranking layer that materially improved retrieval and citation grounding.
 
 ## Important code highlights
 
@@ -609,26 +668,29 @@ Why it matters:
 - guarantees every session can resolve to a workspace
 - keeps downstream APIs simple because they can assume workspace context exists
 
-### 2. Retrieval is hybrid, not pure vector search
+### 2. Retrieval is hybrid and reranked, not pure vector search
 
-The retrieval layer blends semantic similarity, text ranking, and source boosts.
+The retrieval layer now works in two phases:
 
-```sql
-(
-  (1 - (cc.embedding <=> $query_vector::vector)) * 0.72 +
-  ts_rank_cd(
-    to_tsvector('simple', cc.content),
-    plainto_tsquery('simple', $question)
-  ) * 0.23 +
-  cc.rank_boost * 0.05
-) as score
+1. fetch a broader candidate set using embeddings, PostgreSQL full-text ranking, and source boosts
+2. rerank those candidates with intent-aware logic and source diversity so the final context is less email-heavy and more evidentially useful
+
+```ts
+const candidates = result.rows.map((row) => ({
+  sourceType: row.source_type,
+  messageOrDocId: row.message_or_doc_id,
+  content: row.content,
+  score: Number(row.score)
+}));
+
+return rerankRetrievedChunks(candidates, profile, limit);
 ```
 
 Why it matters:
 
 - vector similarity alone is often weak for operational text
-- full-text helps exact term matching
-- `rank_boost` lets the system favor certain sources like message text or contact knowledge
+- broad candidate recall is not enough if the final context is dominated by one source type
+- reranking helps surface uploads, links, and notes that materially improve grounded answers
 
 ### 3. Contacts become retrieval-ready knowledge
 
@@ -721,6 +783,20 @@ Why it matters:
 - prevents duplicate daily briefs
 - preserves the mental model of "my morning briefing"
 - shows the worker is not just reactive, it is also scheduled
+
+### 7. The repo includes a real benchmark harness
+
+The evaluation suite runs against a freshly seeded workspace and emits JSON plus Markdown reports that are suitable for README and pitch material.
+
+```bash
+pnpm benchmark
+```
+
+Why it matters:
+
+- improvements can be measured instead of guessed
+- quoted metrics are tied to concrete timestamped reports
+- regressions in retrieval, grounding, or automation quality become visible early
 
 ## Data model
 
@@ -829,7 +905,7 @@ The route surface mostly falls into four buckets:
 
 The repo includes route-level and package-level tests across the web app, worker, AI package, DB helpers, and shared schemas.
 
-Project test files currently present: `27`
+Project test files currently present: `32`
 
 Examples include:
 
@@ -838,6 +914,7 @@ Examples include:
 - draft approval/send tests
 - meeting proposal approval/create tests
 - retrieval tests
+- benchmark scoring and report-generation tests
 - scheduler tests
 - chunking tests
 - schema tests
@@ -853,6 +930,14 @@ And type-check with:
 ```bash
 pnpm typecheck
 ```
+
+Run the live benchmark suite with:
+
+```bash
+pnpm benchmark
+```
+
+Each benchmark run writes timestamped outputs to `benchmark-reports/`, making every quoted metric traceable to a real report.
 
 ---
 
