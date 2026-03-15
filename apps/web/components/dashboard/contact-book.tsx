@@ -13,7 +13,7 @@ import {
   Search,
   StickyNote,
   UserPlus,
-  UserRoundSearch
+  UserRoundSearch,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
@@ -26,11 +26,17 @@ import {
   panelTransition,
   statusReveal,
   statusTransition,
-  withStagger
+  withStagger,
 } from "@/components/dashboard/motion-presets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,7 +76,7 @@ function emptyDraft(): ContactDraft {
     phoneNumber: "",
     company: "",
     role: "",
-    notes: ""
+    notes: "",
   };
 }
 
@@ -81,7 +87,7 @@ function draftFromContact(contact: ContactBookItem): ContactDraft {
     phoneNumber: contact.phoneNumber ?? "",
     company: contact.company ?? "",
     role: contact.role ?? "",
-    notes: contact.notes ?? ""
+    notes: contact.notes ?? "",
   };
 }
 
@@ -98,10 +104,16 @@ function formatRelativeDate(value: string | null) {
 }
 
 async function readJson<T>(response: Response) {
-  const payload = (await response.json().catch(() => null)) as T | { error?: string } | null;
+  const payload = (await response.json().catch(() => null)) as
+    | T
+    | { error?: string }
+    | null;
   if (!response.ok) {
     const message =
-      payload && typeof payload === "object" && "error" in payload && payload.error
+      payload &&
+      typeof payload === "object" &&
+      "error" in payload &&
+      payload.error
         ? payload.error
         : "Request failed.";
     throw new Error(message);
@@ -112,7 +124,7 @@ async function readJson<T>(response: Response) {
 
 export function ContactBook({
   initialContacts,
-  initialSelectedContactId
+  initialSelectedContactId,
 }: {
   initialContacts: ContactBookItem[];
   initialSelectedContactId?: string | null;
@@ -130,11 +142,13 @@ export function ContactBook({
   const [draft, setDraft] = useState<ContactDraft>(
     initialSelectedContactId
       ? draftFromContact(
-          initialContacts.find((contact) => contact.id === initialSelectedContactId) ?? initialContacts[0]!
+          initialContacts.find(
+            (contact) => contact.id === initialSelectedContactId
+          ) ?? initialContacts[0]!
         )
       : initialContacts[0]
-        ? draftFromContact(initialContacts[0])
-        : emptyDraft()
+      ? draftFromContact(initialContacts[0])
+      : emptyDraft()
   );
   const [query, setQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -167,14 +181,14 @@ export function ContactBook({
       nextQuery !== currentQuery
     ) {
       router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-        scroll: false
+        scroll: false,
       });
     }
   }, [pathname, router, searchParams, selectedContactId]);
 
   async function refreshContacts(preferredContactId?: string | null) {
     const response = await fetch("/api/contacts", {
-      cache: "no-store"
+      cache: "no-store",
     });
     const payload = await readJson<{ contacts: ContactBookItem[] }>(response);
 
@@ -188,7 +202,8 @@ export function ContactBook({
       }
 
       const nextSelectedId =
-        preferredContactId && payload.contacts.some((contact) => contact.id === preferredContactId)
+        preferredContactId &&
+        payload.contacts.some((contact) => contact.id === preferredContactId)
           ? preferredContactId
           : payload.contacts[0].id;
 
@@ -202,21 +217,27 @@ export function ContactBook({
 
     try {
       const response = await fetch(
-        mode === "create" ? "/api/contacts" : `/api/contacts/${selectedContactId}`,
+        mode === "create"
+          ? "/api/contacts"
+          : `/api/contacts/${selectedContactId}`,
         {
           method: mode === "create" ? "POST" : "PATCH",
           headers: {
-            "content-type": "application/json"
+            "content-type": "application/json",
           },
-          body: JSON.stringify(draft)
+          body: JSON.stringify(draft),
         }
       );
 
       const payload = await readJson<{ contact: ContactBookItem }>(response);
       await refreshContacts(payload.contact.id);
-      toast.success(mode === "create" ? "Contact created." : "Contact updated.");
+      toast.success(
+        mode === "create" ? "Contact created." : "Contact updated."
+      );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to save contact.");
+      toast.error(
+        error instanceof Error ? error.message : "Unable to save contact."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -239,7 +260,9 @@ export function ContactBook({
     }
 
     try {
-      await navigator.clipboard.writeText(buildContactDashboardUrl(selectedContact.id));
+      await navigator.clipboard.writeText(
+        buildContactDashboardUrl(selectedContact.id)
+      );
       toast.success("Contact link copied.");
     } catch {
       toast.error("Unable to copy contact link.");
@@ -253,7 +276,7 @@ export function ContactBook({
       contact.phoneNumber,
       contact.company,
       contact.role,
-      contact.notes
+      contact.notes,
     ]
       .filter(Boolean)
       .join(" ")
@@ -262,37 +285,58 @@ export function ContactBook({
     return haystack.includes(deferredQuery.trim().toLowerCase());
   });
 
-  const enrichedCount = contacts.filter(
-    (contact) => Boolean(contact.company || contact.role || contact.phoneNumber || contact.notes)
+  const enrichedCount = contacts.filter((contact) =>
+    Boolean(
+      contact.company || contact.role || contact.phoneNumber || contact.notes
+    )
   ).length;
-  const autoCapturedCount = contacts.filter((contact) => contact.origin !== "manual").length;
+  const autoCapturedCount = contacts.filter(
+    (contact) => contact.origin !== "manual"
+  ).length;
 
   return (
-    <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
+    <motion.section
+      initial="initial"
+      animate="animate"
+      variants={panelReveal}
+      transition={panelTransition}
+    >
       <div className="space-y-4">
         <section className="grid gap-3 md:grid-cols-3">
           <Card className="border-border/80 bg-card/92 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Known contacts</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">
+                Known contacts
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold tracking-tight text-foreground">{contacts.length}</p>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">
+                {contacts.length}
+              </p>
             </CardContent>
           </Card>
           <Card className="border-border/80 bg-card/92 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Auto-captured</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">
+                Auto-captured
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold tracking-tight text-foreground">{autoCapturedCount}</p>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">
+                {autoCapturedCount}
+              </p>
             </CardContent>
           </Card>
           <Card className="border-border/80 bg-card/92 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Enriched profiles</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground">
+                Enriched profiles
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold tracking-tight text-foreground">{enrichedCount}</p>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">
+                {enrichedCount}
+              </p>
             </CardContent>
           </Card>
         </section>
@@ -302,12 +346,19 @@ export function ContactBook({
             <CardHeader className="gap-4 border-b border-border/80 pb-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-xl text-foreground">Directory</CardTitle>
+                  <CardTitle className="text-xl text-foreground">
+                    Directory
+                  </CardTitle>
                   <CardDescription>
-                    Search everyone the workspace knows, whether they were added manually or discovered from mail.
+                    Search everyone the workspace knows, whether they were added
+                    manually or discovered from mail.
                   </CardDescription>
                 </div>
-                <Button type="button" className="rounded-xl" onClick={startCreate}>
+                <Button
+                  type="button"
+                  className="rounded-xl"
+                  onClick={startCreate}
+                >
                   <UserPlus className="size-4" />
                   Add contact
                 </Button>
@@ -324,7 +375,7 @@ export function ContactBook({
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-3 pt-4">
+            <CardContent className="grid grid-cols-2 gap-3 pt-4">
               <AnimatePresence mode="popLayout" initial={false}>
                 {filteredContacts.length === 0 ? (
                   <motion.div
@@ -339,7 +390,9 @@ export function ContactBook({
                   >
                     <UserRoundSearch className="mx-auto size-9 text-muted-foreground" />
                     <p className="mt-3 text-sm font-medium text-foreground">
-                      {contacts.length === 0 ? "No contacts yet." : "No contacts match this search."}
+                      {contacts.length === 0
+                        ? "No contacts yet."
+                        : "No contacts match this search."}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       Gmail senders appear here automatically once they sync in.
@@ -347,7 +400,8 @@ export function ContactBook({
                   </motion.div>
                 ) : (
                   filteredContacts.map((contact, index) => {
-                    const isActive = mode === "edit" && contact.id === selectedContactId;
+                    const isActive =
+                      mode === "edit" && contact.id === selectedContactId;
 
                     return (
                       <motion.button
@@ -368,7 +422,9 @@ export function ContactBook({
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-foreground">{contactLabel(contact)}</p>
+                            <p className="truncate font-medium text-foreground">
+                              {contactLabel(contact)}
+                            </p>
                             <p className="mt-1 truncate text-sm text-muted-foreground">
                               {contact.email ?? "No email yet"}
                             </p>
@@ -380,10 +436,14 @@ export function ContactBook({
 
                         <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                           {contact.company ? (
-                            <span className="rounded-full bg-card px-2.5 py-1">{contact.company}</span>
+                            <span className="rounded-full bg-card px-2.5 py-1">
+                              {contact.company}
+                            </span>
                           ) : null}
                           {contact.role ? (
-                            <span className="rounded-full bg-card px-2.5 py-1">{contact.role}</span>
+                            <span className="rounded-full bg-card px-2.5 py-1">
+                              {contact.role}
+                            </span>
                           ) : null}
                           <span className="rounded-full bg-card px-2.5 py-1">
                             {contact.messageCount} messages
@@ -406,23 +466,27 @@ export function ContactBook({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-xl text-foreground">
-                    {mode === "create" ? "Add contact" : contactLabel(selectedContact ?? {
-                      id: "",
-                      workspaceId: "",
-                      name: null,
-                      email: null,
-                      phoneNumber: null,
-                      company: null,
-                      role: null,
-                      notes: null,
-                      origin: "manual",
-                      messageCount: 0,
-                      firstSeenAt: "",
-                      lastSeenAt: "",
-                      lastMessageAt: null,
-                      createdAt: "",
-                      updatedAt: ""
-                    })}
+                    {mode === "create"
+                      ? "Add contact"
+                      : contactLabel(
+                          selectedContact ?? {
+                            id: "",
+                            workspaceId: "",
+                            name: null,
+                            email: null,
+                            phoneNumber: null,
+                            company: null,
+                            role: null,
+                            notes: null,
+                            origin: "manual",
+                            messageCount: 0,
+                            firstSeenAt: "",
+                            lastSeenAt: "",
+                            lastMessageAt: null,
+                            createdAt: "",
+                            updatedAt: "",
+                          }
+                        )}
                   </CardTitle>
                   <CardDescription>
                     {mode === "create"
@@ -432,7 +496,10 @@ export function ContactBook({
                 </div>
                 {selectedContact ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="border border-border bg-accent text-foreground">
+                    <Badge
+                      variant="secondary"
+                      className="border border-border bg-accent text-foreground"
+                    >
                       {selectedContact.messageCount} linked messages
                     </Badge>
                     <Button
@@ -450,7 +517,12 @@ export function ContactBook({
                       variant="outline"
                       size="sm"
                       className="rounded-xl"
-                      render={<Link href={buildContactDashboardUrl(selectedContact.id)} target="_blank" />}
+                      render={
+                        <Link
+                          href={buildContactDashboardUrl(selectedContact.id)}
+                          target="_blank"
+                        />
+                      }
                     >
                       <ExternalLink className="size-4" />
                       Open
@@ -467,7 +539,12 @@ export function ContactBook({
                   <Input
                     id="contact-name"
                     value={draft.name}
-                    onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        name: event.target.value,
+                      }))
+                    }
                     placeholder="Alex Morgan"
                     className="h-11 rounded-xl border-border bg-muted"
                   />
@@ -478,7 +555,12 @@ export function ContactBook({
                     id="contact-email"
                     type="email"
                     value={draft.email}
-                    onChange={(event) => setDraft((current) => ({ ...current, email: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        email: event.target.value,
+                      }))
+                    }
                     placeholder="alex@company.com"
                     className="h-11 rounded-xl border-border bg-muted"
                   />
@@ -488,7 +570,12 @@ export function ContactBook({
                   <Input
                     id="contact-phone"
                     value={draft.phoneNumber}
-                    onChange={(event) => setDraft((current) => ({ ...current, phoneNumber: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        phoneNumber: event.target.value,
+                      }))
+                    }
                     placeholder="+30 210 555 0000"
                     className="h-11 rounded-xl border-border bg-muted"
                   />
@@ -498,7 +585,12 @@ export function ContactBook({
                   <Input
                     id="contact-company"
                     value={draft.company}
-                    onChange={(event) => setDraft((current) => ({ ...current, company: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        company: event.target.value,
+                      }))
+                    }
                     placeholder="Acme Labs"
                     className="h-11 rounded-xl border-border bg-muted"
                   />
@@ -508,7 +600,12 @@ export function ContactBook({
                   <Input
                     id="contact-role"
                     value={draft.role}
-                    onChange={(event) => setDraft((current) => ({ ...current, role: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        role: event.target.value,
+                      }))
+                    }
                     placeholder="Chief of Staff"
                     className="h-11 rounded-xl border-border bg-muted"
                   />
@@ -518,7 +615,12 @@ export function ContactBook({
                   <Textarea
                     id="contact-notes"
                     value={draft.notes}
-                    onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        notes: event.target.value,
+                      }))
+                    }
                     placeholder="Context, preferences, relationship notes, or meeting prep cues"
                     className="min-h-32 rounded-2xl border-border bg-muted"
                   />
@@ -544,10 +646,14 @@ export function ContactBook({
                   <div className="inline-flex items-start gap-2">
                     <Building2 className="mt-0.5 size-4 text-amber-700" />
                     <div>
-                      <p className="font-medium text-foreground">Company and role</p>
+                      <p className="font-medium text-foreground">
+                        Company and role
+                      </p>
                       <p>
                         {selectedContact.company || selectedContact.role
-                          ? [selectedContact.company, selectedContact.role].filter(Boolean).join(" - ")
+                          ? [selectedContact.company, selectedContact.role]
+                              .filter(Boolean)
+                              .join(" - ")
                           : "Still blank"}
                       </p>
                     </div>
@@ -556,15 +662,26 @@ export function ContactBook({
                     <StickyNote className="mt-0.5 size-4 text-fuchsia-700" />
                     <div>
                       <p className="font-medium text-foreground">Touchpoints</p>
-                      <p>{selectedContact.messageCount} linked inbox messages</p>
+                      <p>
+                        {selectedContact.messageCount} linked inbox messages
+                      </p>
                     </div>
                   </div>
                 </div>
               ) : null}
 
               <div className="flex flex-wrap gap-3">
-                <Button type="button" className="rounded-xl" onClick={() => void saveContact()} disabled={isSaving}>
-                  {isSaving ? "Saving..." : mode === "create" ? "Create contact" : "Save changes"}
+                <Button
+                  type="button"
+                  className="rounded-xl"
+                  onClick={() => void saveContact()}
+                  disabled={isSaving}
+                >
+                  {isSaving
+                    ? "Saving..."
+                    : mode === "create"
+                    ? "Create contact"
+                    : "Save changes"}
                 </Button>
                 <Button
                   type="button"

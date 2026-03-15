@@ -104,7 +104,7 @@ export const Source = ({
 
   if (!href) {
     return (
-      <div className={sharedClassName} {...props}>
+      <div className={sharedClassName} {...(props as ComponentProps<"div">)}>
         {childContent ?? fallbackContent}
       </div>
     );

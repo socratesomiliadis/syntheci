@@ -9,24 +9,33 @@ import {
   panelReveal,
   panelTransition,
   statusReveal,
-  withStagger
+  withStagger,
 } from "@/components/dashboard/motion-presets";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function BriefingPanel({
-  briefing
+  briefing,
 }: {
-  briefing:
-    | {
-        briefingDate: string;
-        summary: string;
-        items: BriefingItem[];
-      }
-    | null;
+  briefing: {
+    briefingDate: string;
+    summary: string;
+    items: BriefingItem[];
+  } | null;
 }) {
   return (
-    <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
+    <motion.section
+      initial="initial"
+      animate="animate"
+      variants={panelReveal}
+      transition={panelTransition}
+    >
       <Card className="h-full border-border shadow-sm">
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -35,7 +44,9 @@ export function BriefingPanel({
               09:00 local
             </Badge>
           </div>
-          <CardDescription>Concise priorities generated from inbox, notes, and meetings.</CardDescription>
+          <CardDescription>
+            Concise priorities generated from inbox, notes, and meetings.
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -68,7 +79,7 @@ export function BriefingPanel({
                   <p className="text-sm text-foreground">{briefing.summary}</p>
                 </motion.div>
 
-                <motion.div layout className="space-y-3">
+                <motion.div layout className="grid grid-cols-2 gap-3">
                   <AnimatePresence mode="popLayout" initial={false}>
                     {briefing.items.map((item, idx) => (
                       <motion.div
@@ -82,14 +93,19 @@ export function BriefingPanel({
                         transition={withStagger(idx)}
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium text-foreground">{item.title}</p>
+                          <p className="font-medium text-foreground">
+                            {item.title}
+                          </p>
                           <Badge variant="outline" className="capitalize">
                             {item.type}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">{item.reason}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {item.reason}
+                        </p>
                         <p className="mt-2 text-[11px] uppercase tracking-wide text-muted-foreground">
-                          {item.sourceRefs.length} source reference{item.sourceRefs.length === 1 ? "" : "s"}
+                          {item.sourceRefs.length} source reference
+                          {item.sourceRefs.length === 1 ? "" : "s"}
                         </p>
                       </motion.div>
                     ))}
