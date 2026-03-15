@@ -1,5 +1,4 @@
 import { ContactBook } from "@/components/dashboard/contact-book";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { backfillContactsFromMessages, listContactsWithStats } from "@/lib/contacts";
 import { requireWorkspaceContext } from "@/lib/session";
 
@@ -21,19 +20,7 @@ export default async function ContactsPage({
       : contacts[0]?.id ?? null;
 
   return (
-    <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
-      <Card className="rounded-[1.75rem] border-border/80 bg-card/95 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-3xl tracking-tight text-foreground">
-            Contacts become durable system context, not just names in an inbox.
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="max-w-3xl text-sm leading-6 text-muted-foreground">
-          Every profile here can start from a sender line, then grow into reusable context for retrieval,
-          scheduling, and future follow-up work across the workspace.
-        </CardContent>
-      </Card>
-
+    <main className="px-4 py-5 md:px-6 md:py-6">
       <ContactBook
         initialContacts={contacts.map((contact) => ({
           ...contact,

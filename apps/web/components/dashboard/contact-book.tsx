@@ -4,7 +4,6 @@ import { startTransition, useDeferredValue, useEffect, useState } from "react";
 
 import {
   Building2,
-  BookUser,
   Mail,
   Phone,
   Search,
@@ -231,52 +230,32 @@ export function ContactBook({
 
   return (
     <motion.section initial="initial" animate="animate" variants={panelReveal} transition={panelTransition}>
-      <div className="space-y-6">
-        <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-          <Card className="rounded-[1.8rem] border-border/80 bg-card/95 shadow-sm">
-            <CardHeader className="space-y-4">
-              <Badge className="w-fit tone-info">
-                <BookUser className="mr-1 size-3.5" />
-                Shared people graph
-              </Badge>
-              <div className="space-y-3">
-                <CardTitle className="text-3xl tracking-tight text-foreground">
-                  Build a living contact book from real conversations, then enrich it when context matters.
-                </CardTitle>
-                <CardDescription className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  New Gmail senders land here automatically, and every update feeds the workspace&apos;s
-                  searchable knowledge so meetings, retrieval, and follow-up work stay people-aware.
-                </CardDescription>
-              </div>
+      <div className="space-y-4">
+        <section className="grid gap-3 md:grid-cols-3">
+          <Card className="border-border/80 bg-card/92 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground">Known contacts</CardTitle>
             </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">{contacts.length}</p>
+            </CardContent>
           </Card>
-
-          <section className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-foreground">Known contacts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-foreground">{contacts.length}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-foreground">Auto-captured</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-foreground">{autoCapturedCount}</p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-[1.35rem] border-border/80 bg-card/92 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-foreground">Enriched profiles</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-semibold tracking-tight text-foreground">{enrichedCount}</p>
-              </CardContent>
-            </Card>
-          </section>
+          <Card className="border-border/80 bg-card/92 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground">Auto-captured</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">{autoCapturedCount}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/80 bg-card/92 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground">Enriched profiles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold tracking-tight text-foreground">{enrichedCount}</p>
+            </CardContent>
+          </Card>
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

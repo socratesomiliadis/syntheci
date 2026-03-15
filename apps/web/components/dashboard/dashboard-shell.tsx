@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Sparkles } from "lucide-react";
 import { TextMorph } from "torph/react";
 import {
   dashboardNavItems,
@@ -145,13 +144,6 @@ export function DashboardShell({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className="border-border bg-card/70 text-muted-foreground"
-              >
-                <Sparkles className="mr-1 size-3.5" />
-                AI workflow hub
-              </Badge>
               <Badge className="tone-warning">
                 {openThreadCount} open threads
               </Badge>

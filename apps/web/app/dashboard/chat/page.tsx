@@ -28,43 +28,24 @@ export default async function ChatPage({
     : null;
 
   return (
-    <main className="space-y-6 px-4 py-5 md:px-6 md:py-6">
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-      <Card className="rounded-[1.75rem] border-border/80 bg-card/95 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-3xl tracking-tight text-foreground">Ask grounded questions without losing the thread</CardTitle>
+    <main className="space-y-4 px-4 py-5 md:px-6 md:py-6">
+      <section className="grid gap-3 lg:grid-cols-[minmax(0,180px)_minmax(0,1fr)]">
+        <Card className="border-border/80 bg-card/90 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-foreground">Saved conversations</CardTitle>
           </CardHeader>
-          <CardContent className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Each conversation is now persistent, private to you inside this workspace, and easy to reopen later when you need the same trail of reasoning and citations.
+          <CardContent>
+            <p className="text-3xl font-semibold tracking-tight text-foreground">{conversations.length}</p>
           </CardContent>
         </Card>
-
-        <section className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-foreground">Saved conversations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-semibold tracking-tight text-foreground">{conversations.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-foreground">Current thread</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {initialConversation?.title ?? "Create a new conversation to begin."}
-            </CardContent>
-          </Card>
-          <Card className="rounded-[1.4rem] border-border/80 bg-card/90 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-foreground">History scope</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Private per signed-in user within the current workspace.
-            </CardContent>
-          </Card>
-        </section>
+        <Card className="border-border/80 bg-card/90 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-foreground">Current thread</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {initialConversation?.title ?? "Create a new conversation to begin."}
+          </CardContent>
+        </Card>
       </section>
 
       <ChatPanel initialConversations={conversations} initialConversation={initialConversation} />
